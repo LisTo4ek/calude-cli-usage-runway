@@ -39,14 +39,32 @@ check_not() {
 
 fresh
 out=$(input A 1.5 - 0 | line)
-check "no limit data: cost shown" "$out" 'Ctx 12.3% · $1.50'
+check "no limit data: starting" "$out" 'Usage runway: starting... · Ctx 12.3%'
 check_not "no limit data: no 5h" "$out" '5h'
+check_not "no limit data: no cost" "$out" '$'
+
+fresh
+input A 1 20 7200 30 86400 | line >/dev/null
+out=$(input B 0 - 0 | line)
+check "new session adopts shared 5h" "$out" '5h 20.0%'
+check "new session adopts shared 7d" "$out" '7d 30.0%'
+check_not "new session: not starting" "$out" 'starting'
+check "new session: Ses from zero" "$out" 'Ses 0.0%'
+out=$(input B 1 22 7200 30 86400 | line)
+check "new session: first response counts from adopted value" "$out" 'Ses 2.0%'
+
+fresh
+input A 1 20 7200 | line >/dev/null
+echo "$NOW 20 $((NOW - 60)) - -" > "$USAGE_RUNWAY_HOME/state/latest-rl"
+out=$(input B 0 - 0 | line)
+check "expired shared data: starting" "$out" 'Usage runway: starting...'
+check_not "expired shared data: no 5h" "$out" '5h'
 
 fresh
 out=$(input A 1 20 7200 | line)
 check "5h: used, projection, reset" "$out" '5h 20.0% → 33.3% ↻ 02:00'
 check "Ses starts at zero" "$out" 'Ses 0.0%'
-check_not "cost hidden with limit data" "$out" '$'
+check_not "no cost with limit data" "$out" '$'
 
 fresh
 sample five_hour 7200 600 20

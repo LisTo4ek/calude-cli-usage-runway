@@ -34,10 +34,6 @@ OFF_DAY_WEIGHT=0.1
 CMD_WARN=3
 CMD_CRIT=5
 
-# Session cost in USD: auto = only when no subscription limit data is available
-# (API-key accounts), on = always, off = never.
-SHOW_COST=auto
-
 # Guard: when on, tool calls are denied once 5h or 7d usage reaches GUARD_PCT,
 # so Claude stops and asks you whether to continue.
 GUARD=off

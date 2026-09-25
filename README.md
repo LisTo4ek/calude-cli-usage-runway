@@ -64,8 +64,9 @@ the other settings below are changed in the config file.
   `strftime`/`mktime`, such as `gawk` or `mawk` 1.3.4+ (`brew install gawk` on
   macOS). Without one the weekly forecast uses plain wall-clock time.
 - Limit numbers (`5h`, `7d`, `Ses`, `Cmd`) are available only for Claude Pro and
-  Max subscriptions, after the first response in a session. API-key accounts see
-  context usage and session cost.
+  Max subscriptions. A new session shows the latest values seen by any session;
+  when there are none (first run, or after the limits reset), and for API-key
+  accounts, it shows `Usage runway: starting...` and context usage.
 
 ## Reading the status line
 
@@ -81,7 +82,7 @@ the other settings below are changed in the config file.
 | `Ctx 12.3%` | How full this session's context window is. |
 | `Ses 4.0%` | 5-hour-limit usage by this session since it started or since `/clear`, across 5-hour resets. |
 | `Cmd 1.0%` | 5-hour-limit usage by your last message, including all tools, skills and subagents it ran. |
-| `$1.50` | Session cost at API list prices (see `SHOW_COST`). |
+| `Usage runway: starting...` | No limit data yet: shown until the first response. |
 
 Colours: green is on track, yellow means the limit is projected above
 `WARN_PCT` at reset, red means it is projected to run out before reset. `Cmd`
@@ -143,7 +144,6 @@ there, commented out). Changes apply on the next refresh.
 | `DAY_START`, `DAY_END` | `0`, `24` | Working hours for the weekly forecast, local time. |
 | `NIGHT_WEIGHT`, `OFF_DAY_WEIGHT` | `0.1`, `0.1` | Weight of off hours and off days; `1` disables weighting. |
 | `CMD_WARN`, `CMD_CRIT` | `3`, `5` | `Cmd` thresholds, %. |
-| `SHOW_COST` | `auto` | `auto`: cost only without limit data; `on`; `off`. |
 | `GUARD`, `GUARD_PCT` | `off`, `95` | Auto-stop guard. |
 | `NOTIFY`, `BELL` | `on`, `on` | Desktop notification and terminal bell for alerts. |
 | `SYM_PREFIX` | empty | Text printed before the status line, e.g. to tell several setups apart. |

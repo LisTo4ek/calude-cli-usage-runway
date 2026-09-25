@@ -155,9 +155,9 @@ weekly forecast. The user can change both in the config file.
 After a successful install and the settings menu, tell the user:
 
 - The status line appears within about 10 seconds.
-- Limit numbers (`5h`, `7d`, `Ses`, `Cmd`) appear after the first response in a
-  session, and only for Claude Pro/Max subscriptions. API-key accounts see
-  context usage and session cost instead.
+- Limit numbers (`5h`, `7d`, `Ses`, `Cmd`) appear only for Claude Pro/Max
+  subscriptions. Until the first response the line may show
+  `Usage runway: starting...`. API-key accounts always see that and context usage.
 - Settings such as the auto-stop guard (`GUARD=on`) are in
   `~/.claude/usage-runway/config`.
 - To change the working days and hours, or the signs and prefix, later, run

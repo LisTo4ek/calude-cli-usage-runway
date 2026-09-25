@@ -29,11 +29,18 @@ K=$'\e[90m'; B=$'\e[34m'; R=$'\e[31m'; Y=$'\e[33m'; G=$'\e[32m'; D=$'\e[2m'; N=$
 
 # Rate limits arrive with each session's own API responses, so an idle session
 # holds stale values. The freshest observation is shared across sessions: a
-# session's values are fresh when its cost grew since its previous render.
+# session's values are fresh when its cost grew since its previous render. A
+# session without values of its own yet (before its first response) adopts the
+# shared ones.
 sync_rate_limits() {
   local acc="$UR_STATE/acc-$sid" latest="$UR_STATE/latest-rl" own="$UR_STATE/obs-$sid"
   local lr lu lc lt fresh=0 ots=0 gts g5u g5r g7u g7r
-  [ "$h5u" = "-" ] && [ "$d7u" = "-" ] && return
+  if [ "$h5u" = "-" ] && [ "$d7u" = "-" ]; then
+    { [ -f "$latest" ] && read -r gts g5u g5r g7u g7r < "$latest"; } || return
+    [ "$g5r" != "-" ] && (( ${g5r%.*} > now )) && { h5u=$g5u; h5r=$g5r; }
+    [ "$g7r" != "-" ] && (( ${g7r%.*} > now )) && { d7u=$g7u; d7r=$g7r; }
+    return
+  fi
   if [ -f "$acc" ] && read -r lr lu lc lt < "$acc"; then
     awk -v c="$cost" -v l="$lc" 'BEGIN { exit !(c > l) }' && fresh=1
   else
@@ -236,8 +243,10 @@ if [ -n "$SESS_TOTAL" ]; then
   [ -n "$TURN_SEG" ] && SEGS+=("${B}Cmd${N} ${TURN_SEG}")
 fi
 
-if [ "$SHOW_COST" = on ] || { [ "$SHOW_COST" = auto ] && [ "$h5u" = "-" ] && [ "$d7u" = "-" ]; }; then
-  SEGS+=("$(printf '$%.2f' "$cost")")
+# No limit data from this session or a recent one: first render, or an API-key
+# account.
+if [ "$h5u" = "-" ] && [ "$d7u" = "-" ]; then
+  SEGS=("Usage runway: starting..." ${SEGS[@]+"${SEGS[@]}"})
 fi
 
 out=""
