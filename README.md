@@ -14,8 +14,8 @@ Claude from running more tools when a limit is nearly used up.
 ## Install
 
 ```
-/plugin marketplace add <owner>/usage-runway
-/plugin install usage-runway@usage-runway
+/plugin marketplace add LisTo4ek/calude-cli-usage-runway
+/plugin install usage-runway@listo4ek
 /usage-runway:setup
 ```
 
@@ -125,7 +125,7 @@ Set `USAGE_RUNWAY_HOME` to keep settings and state somewhere other than
 
 ```
 /usage-runway:setup uninstall
-/plugin uninstall usage-runway@usage-runway
+/plugin uninstall usage-runway@listo4ek
 ```
 
 `/usage-runway:setup` with "uninstall and purge" also deletes
@@ -142,7 +142,7 @@ Local install for testing:
 
 ```
 /plugin marketplace add /path/to/usage-runway
-/plugin install usage-runway@usage-runway
+/plugin install usage-runway@listo4ek
 ```
 
 ## License
