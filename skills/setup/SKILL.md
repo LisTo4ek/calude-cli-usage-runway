@@ -102,24 +102,38 @@ line signs? Pick Other to type all your signs at once." Options:
 ### Menu 2 and menu 3: each sign
 
 Ask menu 2 as one AskUserQuestion call with four questions, then menu 3 as
-one call with three questions. All are single-select, and the user can pick
-"Other" to type their own sign. Each question ends with "Pick Other to type
-your own." as in the table, because the Other option is easy to miss. The
-first option is the default, marked "(Recommended)". Give each option a `preview` showing an example line with
-that sign, for example `5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
+one call with three questions. All are single-select. The first option is
+the default, marked "(Recommended)". Give each option a `preview` showing an
+example line with that sign, for example
+`5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
+
+Every question also gets a fourth option, "Type my own" (description "Write
+or paste your own sign after this menu", preview `5h 20.0% ? 33.3% ↻ 02:00
+(16:42) · 7d 30.0%` with `?` in that sign's place). Menus with previews do
+not reliably show the automatic "Other" text field, so this option is how
+the user gets to enter a custom sign.
 
 | Menu | Header | Question | Options (setting value) |
 |---|---|---|---|
-| 2 | Prefix | "What text should come before the status line? Pick Other to type your own." | "None" (empty), "[work]" (`[work] `), "[home]" (`[home] `) |
-| 2 | Arrow | "Which sign should point to the projected usage? Pick Other to type your own." | "→", "->", "»" |
-| 2 | Reset | "Which sign should mark the time until reset? Pick Other to type your own." | "↻", "⟳", "@" |
-| 2 | Separator | "Which sign should separate the segments? Pick Other to type your own." | "·", "\|", "•" |
-| 3 | Warning | "Which sign should warn that a limit runs out before reset? Pick Other to type your own." | "⚠", "!", "‼" |
-| 3 | Limit hit | "Which sign should show a limit is reached? Pick Other to type your own." | "⛔", "✖", "FULL" |
-| 3 | Waiting | "Which sign should show there is no forecast yet? Pick Other to type your own." | "…", "...", "?" |
+| 2 | Prefix | "What text should come before the status line?" | "None" (empty), "[work]" (`[work] `), "[home]" (`[home] `), "Type my own" |
+| 2 | Arrow | "Which sign should point to the projected usage?" | "→", "->", "»", "Type my own" |
+| 2 | Reset | "Which sign should mark the time until reset?" | "↻", "⟳", "@", "Type my own" |
+| 2 | Separator | "Which sign should separate the segments?" | "·", "\|", "•", "Type my own" |
+| 3 | Warning | "Which sign should warn that a limit runs out before reset?" | "⚠", "!", "‼", "Type my own" |
+| 3 | Limit hit | "Which sign should show a limit is reached?" | "⛔", "✖", "FULL", "Type my own" |
+| 3 | Waiting | "Which sign should show there is no forecast yet?" | "…", "...", "?", "Type my own" |
 
-For a prefix typed with "Other", add a trailing space unless the user asked
-for none, so the prefix does not run into `5h`.
+Custom signs:
+
+- If the user picked "Type my own" for any question, then after menu 3, ask
+  in a plain chat message (not AskUserQuestion) for every such sign at once,
+  e.g. "Type or paste your signs, one per line: `Arrow:` and `Separator:`".
+  Stop and wait for their reply, then save everything in one call.
+- If the user picked "Other" and typed text, or added notes to an option
+  that name a sign, use that text as the value.
+- For a custom prefix, add a trailing space unless the user asked for none,
+  so the prefix does not run into `5h`.
+- If a reply is unclear, ask again. Do not guess.
 
 ### Save
 
