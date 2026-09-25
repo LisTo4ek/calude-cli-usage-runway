@@ -17,8 +17,7 @@ Pick the mode from the user's request (default: install):
 | check status | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --status` |
 | disable / remove | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --uninstall` |
 | remove including settings and history | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --uninstall --purge` |
-| change working days / hours | the schedule steps below |
-| change symbols (arrow, separator, …) or prefix | the symbols steps below |
+| change working days / hours, symbols (arrow, separator, …) or prefix | the settings menu below |
 
 If `${CLAUDE_PLUGIN_ROOT}` is not expanded in the command, use
 `"$(cat ~/.claude/usage-runway/plugin-root)/scripts/setup.sh"` instead.
@@ -27,19 +26,39 @@ If the install exits with code 3, another status line is configured. Show the
 user the existing command from the output and ask whether to replace it. Only
 if they agree, re-run with `--force`.
 
-## Schedule
+## Settings menu
 
 Run this after a successful install, and when the user asks to change their
-working days or hours. Ask both questions in one AskUserQuestion call
-(single-select; the user can pick "Other" to type their own):
+working days, hours, signs (symbols) or prefix. All settings are in one
+AskUserQuestion call with four single-select questions. Do not split it into
+several menus, and do not ask follow-up menus.
 
-1. "Which days do you usually work?" (header "Work days"). Options:
-   "Every day (Recommended)", "Monday to Friday", "Monday to Saturday".
-2. "Which hours do you usually work?" (header "Work hours"). Options:
-   "All day (Recommended)", "08:00 to 22:00", "09:00 to 18:00".
+If the user already said what they want (for example "arrow ->" or "Mon to
+Fri, 9 to 18"), skip the menu and save just that.
 
-Map the answers to settings. Days are numbered 1 = Monday to 7 = Sunday. Hours
-are whole hours from 0 to 24 local time, and DAY_START must be less than DAY_END.
+First run `setup.sh --status` and read the `schedule:` and `symbols:` lines.
+Add " (current)" to the option that matches each current value. If the
+current value matches no option, replace the third option with
+"Keep current: <value>".
+
+Do not give any option a `preview`. Previews hide the automatic "Other" text
+field, which is where the user types their own value.
+
+| Header | Question | Options |
+|---|---|---|
+| Work days | "Which days do you usually work? Pick Other to type your own, e.g. Mon, Wed, Fri." | "Every day (Recommended)", "Monday to Friday", "Monday to Saturday" |
+| Work hours | "Which hours do you usually work? Pick Other to type your own, e.g. 7-15." | "All day (Recommended)", "08:00 to 22:00", "09:00 to 18:00" |
+| Signs | "Which status line signs? Pick Other to set single signs, e.g. arrow -> reset @ sep \| (names: arrow, reset, sep, warn, full, wait)." | "Keep current (Recommended)", "Unicode defaults", "Plain ASCII" |
+| Prefix | "What text should come before the status line? Pick Other to type your own." | "None (Recommended)", "[work]", "[home]" |
+
+Give each option a short `description`. For "Keep current", list the current
+signs. For the other sign sets and the prefixes, show an example line such as
+`5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
+
+### Map the answers
+
+Days are numbered 1 = Monday to 7 = Sunday. Hours are whole hours from 0 to
+24 local time, and DAY_START must be less than DAY_END.
 
 | Answer | Setting |
 |---|---|
@@ -49,109 +68,53 @@ are whole hours from 0 to 24 local time, and DAY_START must be less than DAY_END
 | All day | `DAY_START=0 DAY_END=24` |
 | 08:00 to 22:00 | `DAY_START=8 DAY_END=22` |
 | 09:00 to 18:00 | `DAY_START=9 DAY_END=18` |
+| Keep current (signs) | nothing |
+| Unicode defaults | the defaults from the table below, all except `SYM_PREFIX` |
+| Plain ASCII | `SYM_ARROW="->" SYM_RESET="@" SYM_SEP="\|" SYM_WARN="!" SYM_FULL="FULL" SYM_WAIT="..."` |
+| None | `SYM_PREFIX=""` |
+| [work] / [home] | `SYM_PREFIX="[work] "` / `SYM_PREFIX="[home] "` |
 
-Convert an "Other" answer the same way. For example, "Mon, Wed, Fri" becomes
-`WORK_DAYS="1 3 5"` and "7am-3pm" becomes `DAY_START=7 DAY_END=15`. If an
-answer is unclear, ask again. Do not guess.
-
-Save the settings in one call:
-
-```
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --set "WORK_DAYS=1 2 3 4 5" DAY_START=9 DAY_END=18
-```
-
-If it exits with code 1, show the user the error and ask again.
-
-Hours outside the working hours and days outside the working days count as
-`NIGHT_WEIGHT` and `OFF_DAY_WEIGHT` of a working hour (default 0.1) in the
-weekly forecast. The user can change both in the config file.
-
-## Symbols
-
-Run this after the schedule step of an install, and when the user asks to
-change the signs (symbols) or the prefix. These settings hold them:
-
-| Setting | Default | Shown |
-|---|---|---|
-| `SYM_PREFIX` | empty | before the whole status line, e.g. to tell setups apart |
-| `SYM_ARROW` | `→` | before the projected % |
-| `SYM_RESET` | `↻` | before the time until reset |
-| `SYM_SEP` | `·` | between segments |
-| `SYM_WARN` | `⚠` | projected to hit 100% before reset, and before alerts |
-| `SYM_FULL` | `⛔` | limit reached |
-| `SYM_WAIT` | `…` | not enough data for a forecast yet |
-
-If the user already named the signs they want, skip the menus and save them.
-Otherwise first run `setup.sh --status` and read the `symbols:` lines, so you
-can add " (current)" to the option that matches each current value.
-
-### Menu 1: style
-
-One AskUserQuestion (header "Signs"): "How do you want to change the status
-line signs? Pick Other to type all your signs at once." Options:
-
-- "Pick each sign (Recommended)": go to menus 2 and 3.
-- "Plain ASCII": save `SYM_ARROW="->" SYM_RESET="@" SYM_SEP="|" SYM_WARN="!" SYM_FULL="FULL" SYM_WAIT="..."`.
-- "Unicode defaults": save the defaults from the table above (all except
-  `SYM_PREFIX`).
-- "Prefix only": ask only the "Prefix" question from menu 2.
-- "Other" (typed text): map what the user typed to the settings, for example
-  "arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`. If it is unclear,
-  ask again. Do not guess.
-
-### Menu 2 and menu 3: each sign
-
-Ask menu 2 as one AskUserQuestion call with four questions, then menu 3 as
-one call with three questions. All are single-select. The first option is
-the default, marked "(Recommended)". Give each option a `preview` showing an
-example line with that sign, for example
-`5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
-
-Every question also gets a fourth option, "Type my own" (description "Write
-or paste your own sign after this menu", preview `5h 20.0% ? 33.3% ↻ 02:00
-(16:42) · 7d 30.0%` with `?` in that sign's place). Menus with previews do
-not reliably show the automatic "Other" text field, so this option is how
-the user gets to enter a custom sign.
-
-| Menu | Header | Question | Options (setting value) |
+| Sign name | Setting | Default | Shown |
 |---|---|---|---|
-| 2 | Prefix | "What text should come before the status line?" | "None" (empty), "[work]" (`[work] `), "[home]" (`[home] `), "Type my own" |
-| 2 | Arrow | "Which sign should point to the projected usage?" | "→", "->", "»", "Type my own" |
-| 2 | Reset | "Which sign should mark the time until reset?" | "↻", "⟳", "@", "Type my own" |
-| 2 | Separator | "Which sign should separate the segments?" | "·", "\|", "•", "Type my own" |
-| 3 | Warning | "Which sign should warn that a limit runs out before reset?" | "⚠", "!", "‼", "Type my own" |
-| 3 | Limit hit | "Which sign should show a limit is reached?" | "⛔", "✖", "FULL", "Type my own" |
-| 3 | Waiting | "Which sign should show there is no forecast yet?" | "…", "...", "?", "Type my own" |
+| (prefix) | `SYM_PREFIX` | empty | before the whole status line, e.g. to tell setups apart |
+| arrow | `SYM_ARROW` | `→` | before the projected % |
+| reset | `SYM_RESET` | `↻` | before the time until reset |
+| sep | `SYM_SEP` | `·` | between segments |
+| warn | `SYM_WARN` | `⚠` | projected to hit 100% before reset, and before alerts |
+| full | `SYM_FULL` | `⛔` | limit reached |
+| wait | `SYM_WAIT` | `…` | not enough data for a forecast yet |
 
-Custom signs:
-
-- If the user picked "Type my own" for any question, then after menu 3, ask
-  in a plain chat message (not AskUserQuestion) for every such sign at once,
-  e.g. "Type or paste your signs, one per line: `Arrow:` and `Separator:`".
-  Stop and wait for their reply, then save everything in one call.
-- If the user picked "Other" and typed text, or added notes to an option
-  that name a sign, use that text as the value.
-- For a custom prefix, add a trailing space unless the user asked for none,
-  so the prefix does not run into `5h`.
-- If a reply is unclear, ask again. Do not guess.
+Convert "Other" answers the same way. "Mon, Wed, Fri" becomes
+`WORK_DAYS="1 3 5"`, "7am-3pm" becomes `DAY_START=7 DAY_END=15`, and
+"arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`. Accept the setting
+names and plain words too ("separator", "warning"). Notes added to an option
+that name a value count the same way. For a custom prefix, add a trailing
+space unless the user asked for none, so the prefix does not run into `5h`.
+If an answer is unclear, ask about that one setting in a plain chat message.
+Do not guess.
 
 ### Save
 
 Save only the settings that differ from their current values, in one call:
 
 ```
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --set "SYM_ARROW=->" "SYM_SEP=|" "SYM_PREFIX=[work] "
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --set "WORK_DAYS=1 2 3 4 5" DAY_START=9 DAY_END=18 "SYM_ARROW=->" "SYM_PREFIX=[work] "
 ```
 
-Each value other than `SYM_PREFIX` is 1 to 16 bytes (a Unicode symbol takes 2
-to 4). `SYM_PREFIX` can be any length, or empty to remove it. None may contain
-`"`, `\`, `$`, backtick or control characters. If the call exits with code 1,
-show the user the error and ask that question again. Afterwards, tell the user
-the status line picks up the change on its next refresh (about 10 seconds).
+Each sign value is 1 to 16 bytes (a Unicode symbol takes 2 to 4).
+`SYM_PREFIX` can be any length, or empty to remove it. None may contain `"`,
+`\`, `$`, backtick or control characters. If the call exits with code 1, show
+the user the error and ask about that setting again. Afterwards, tell the
+user the status line picks up the change on its next refresh (about 10
+seconds).
+
+Hours outside the working hours and days outside the working days count as
+`NIGHT_WEIGHT` and `OFF_DAY_WEIGHT` of a working hour (default 0.1) in the
+weekly forecast. The user can change both in the config file.
 
 ## After install
 
-After a successful install and the schedule and symbols steps, tell the user:
+After a successful install and the settings menu, tell the user:
 
 - The status line appears within about 10 seconds.
 - Limit numbers (`5h`, `7d`, `Ses`, `Cmd`) appear after the first response in a
@@ -160,4 +123,5 @@ After a successful install and the schedule and symbols steps, tell the user:
 - Settings such as the auto-stop guard (`GUARD=on`) are in
   `~/.claude/usage-runway/config`.
 - To change the working days and hours, or the signs and prefix, later, run
-  `/usage-runway:setup` again and ask for that change.
+  `/usage-runway:setup` again, or name the change directly, e.g.
+  `/usage-runway:setup arrow ->`.

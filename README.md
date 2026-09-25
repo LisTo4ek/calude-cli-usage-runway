@@ -23,9 +23,10 @@ Plugins cannot set the status line themselves, so `/usage-runway:setup` adds it
 to `~/.claude/settings.json`. It keeps a backup at
 `settings.json.bak-usage-runway` and does not replace an existing status line
 without asking. The status line appears within about 10 seconds. Setup
-then asks for your working days and hours (default: every day, all day). Run
-`/usage-runway:setup` again at any time to change them, or ask it to change
-the symbols or the prefix (for example plain ASCII if your font lacks them).
+then shows one menu with your working days and hours (default: every day, all
+day), the symbols (for example plain ASCII if your font lacks them) and the
+prefix. Pick Other in any question to type your own value. Run
+`/usage-runway:setup` again at any time to change them.
 
 ### Requirements
 
