@@ -8,7 +8,9 @@
 #   setup.sh --status   show what is configured
 #   setup.sh --uninstall [--purge]   remove the status line (--purge: also data)
 #   setup.sh --set KEY=VALUE...      write settings to the user config
-#                                    (WORK_DAYS, DAY_START, DAY_END, PREFIX)
+#                                    (WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX,
+#                                    SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN,
+#                                    SYM_FULL, SYM_WAIT)
 #
 # Exit codes: 0 ok, 1 error, 3 another status line is configured.
 set -u
@@ -41,6 +43,7 @@ case $current in "$launcher"|*usage-runway*) ours=1 ;; esac
 # The config is sourced by bash, so only known keys with checked values are written.
 days_re='^[1-7]( [1-7])*$' hour_re='^[0-9]{1,2}$'
 prefix_re='^[^"\$`[:cntrl:]]*$'   # no quote, backslash, $, backtick or control chars
+sym_re='^[^"\$`[:cntrl:]]{1,16}$'
 
 ensure_config() {
   mkdir -p "$UR_HOME"
@@ -71,6 +74,8 @@ case $mode in
     echo "plugin:      $(cat "$UR_HOME/plugin-root" 2>/dev/null || echo "$UR_ROOT")"
     echo "config:      $UR_HOME/config"
     echo "schedule:    days $WORK_DAYS, hours $DAY_START-$DAY_END (1 = Monday)"
+    echo "symbols:     SYM_PREFIX=\"$SYM_PREFIX\" SYM_ARROW=\"$SYM_ARROW\" SYM_RESET=\"$SYM_RESET\" SYM_SEP=\"$SYM_SEP\""
+    echo "             SYM_WARN=\"$SYM_WARN\" SYM_FULL=\"$SYM_FULL\" SYM_WAIT=\"$SYM_WAIT\""
     awk_name=$(time_awk)
     echo "time awk:    ${awk_name:-<none: weekly forecast uses wall-clock time>}"
     ;;
@@ -103,9 +108,11 @@ case $mode in
           [[ $v =~ $hour_re ]] && (( 10#$v <= 24 )) || { echo "$k: an hour 0-24, got: $v" >&2; exit 1; }
           v=$((10#$v))
           [ "$k" = DAY_START ] && ds=$v || de=$v ;;
-        PREFIX)
-          [[ $v =~ $prefix_re ]] || { echo "PREFIX: text without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
-        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, PREFIX)" >&2; exit 1 ;;
+        SYM_PREFIX)
+          [[ $v =~ $prefix_re ]] || { echo "SYM_PREFIX: text without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
+        SYM_ARROW|SYM_RESET|SYM_SEP|SYM_WARN|SYM_FULL|SYM_WAIT)
+          [[ $v =~ $sym_re ]] || { echo "$k: 1-16 bytes (a Unicode symbol is 2-4) without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
+        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT)" >&2; exit 1 ;;
       esac
     done
     (( ds < de )) || { echo "DAY_START ($ds) must be before DAY_END ($de)" >&2; exit 1; }

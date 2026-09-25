@@ -48,5 +48,14 @@ GUARD_PCT=95
 NOTIFY=on
 BELL=on
 
-# Text printed before the status line, e.g. to tell several setups apart.
-PREFIX=""
+# Symbols: text printed before the status line (e.g. to tell several setups
+# apart), then the projection arrow, reset, separator between segments, "hits
+# 100% before reset", limit reached, and "no forecast yet". Use plain text
+# (e.g. SYM_ARROW="->") if your terminal font lacks them.
+SYM_PREFIX=""
+SYM_ARROW="→"
+SYM_RESET="↻"
+SYM_SEP="·"
+SYM_WARN="⚠"
+SYM_FULL="⛔"
+SYM_WAIT="…"

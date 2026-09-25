@@ -173,14 +173,36 @@ bash "$SETUP" --set GUARD=on >/dev/null 2>&1; rc=$?
 check "setup --set rejects unsupported keys" "$rc" '1'
 check "setup --set leaves config unchanged on error" "$(cat "$USAGE_RUNWAY_HOME/config")" "$cfg"
 for bad in 'a"b' 'a\b' 'a$(touch x)' 'a`touch x`' "$(printf 'a\nb')"; do
-  bash "$SETUP" --set "PREFIX=$bad" >/dev/null 2>&1; rc=$?
+  bash "$SETUP" --set "SYM_PREFIX=$bad" >/dev/null 2>&1; rc=$?
   check "setup --set rejects unsafe prefix" "$rc" '1'
 done
-bash "$SETUP" --set 'PREFIX=[work] ' >/dev/null; rc=$?
+bash "$SETUP" --set 'SYM_PREFIX=[work] ' >/dev/null; rc=$?
 check "setup --set saves the prefix" "$rc" '0'
-check "setup --set writes the prefix" "$(cat "$USAGE_RUNWAY_HOME/config")" 'PREFIX="[work] "'
+check "setup --set writes the prefix" "$(cat "$USAGE_RUNWAY_HOME/config")" 'SYM_PREFIX="[work] "'
 out=$(input A 1 20 7200 | bash "$SL" | sed 's/\x1b\[[0-9;]*m//g')
 check "status line uses the prefix set by setup" "$out" '[work] '
+
+fresh
+conf 'PREFIX="[old] "'
+out=$(input A 1 20 7200 | line)
+check "old PREFIX setting still works" "$out" '[old] 5h'
+
+fresh
+conf 'SYM_ARROW="->" SYM_RESET="@" SYM_SEP="|" SYM_WAIT="..."'
+out=$(input A 1 20 7200 | line)
+check "symbols come from the config" "$out" '5h 20.0% -> 33.3% @ 02:00'
+check "separator comes from the config" "$out" ' | Ctx'
+
+fresh
+bash "$SETUP" --set 'SYM_ARROW=->' 'SYM_SEP=|' >/dev/null; rc=$?
+check "setup --set saves symbols" "$rc" '0'
+out=$(input A 1 20 7200 | line)
+check "status line uses the symbols set by setup" "$out" '5h 20.0% -> 33.3% ↻ 02:00'
+check "status line uses the separator set by setup" "$out" ' | Ctx'
+for bad in '' 'a$(touch x)' 'a"b' '12345678901234567'; do
+  bash "$SETUP" --set "SYM_SEP=$bad" >/dev/null 2>&1; rc=$?
+  check "setup --set rejects bad symbol" "$rc" '1'
+done
 
 echo
 echo "$pass passed, $fail failed"

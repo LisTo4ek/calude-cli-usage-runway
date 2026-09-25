@@ -39,7 +39,7 @@ if [ -f "$UR_STATE/alerts" ]; then
     (( reset < now )) && continue
     grep -qxF "$id" "$seen" 2>/dev/null && continue
     echo "$id" >> "$seen"
-    msgs+="${msgs:+ }⚠ $text"
+    msgs+="${msgs:+ }${SYM_WARN} $text"
   done < "$UR_STATE/alerts"
 fi
 

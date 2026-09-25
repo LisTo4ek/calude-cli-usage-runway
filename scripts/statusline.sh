@@ -153,7 +153,7 @@ forecast() {
   (( left < 0 )) && left=0
   upct=$(printf '%.0f' "$u")
   upd=$(printf '%.1f' "$u")
-  reset="${K}↻${N} ${D}$(fmt_dur "$left") ($(fmt_clock "$r0"))${N}"
+  reset="${K}${SYM_RESET}${N} ${D}$(fmt_dur "$left") ($(fmt_clock "$r0"))${N}"
   if (( upct >= 100 )) || { (( eta >= 0 )) && (( eta < left )); }; then
     level=crit; color=$R
   elif [ "$proj" = "-" ]; then
@@ -165,13 +165,13 @@ forecast() {
   fi
 
   if [ "$level" = crit ] && (( upct >= 100 )); then
-    seg="${B}${label}${N} ${color}100% ⛔${N} $reset"
+    seg="${B}${label}${N} ${color}100% ${SYM_FULL}${N} $reset"
   elif [ "$level" = crit ]; then
-    seg="${B}${label}${N} ${color}${upd}%${N} ${K}→${N} ${color}${projd}% ⚠ $(fmt_dur "$eta")${N} $reset"
+    seg="${B}${label}${N} ${color}${upd}%${N} ${K}${SYM_ARROW}${N} ${color}${projd}% ${SYM_WARN} $(fmt_dur "$eta")${N} $reset"
   elif [ "$proj" = "-" ]; then
-    seg="${B}${label}${N} ${color}${upd}%${N} ${K}→${N} ${color}…${N} $reset"
+    seg="${B}${label}${N} ${color}${upd}%${N} ${K}${SYM_ARROW}${N} ${color}${SYM_WAIT}${N} $reset"
   else
-    seg="${B}${label}${N} ${color}${upd}%${N} ${K}→${N} ${color}${projd}%${N} $reset"
+    seg="${B}${label}${N} ${color}${upd}%${N} ${K}${SYM_ARROW}${N} ${color}${projd}%${N} $reset"
   fi
   SEGS+=("$seg")
 
@@ -241,5 +241,5 @@ if [ "$SHOW_COST" = on ] || { [ "$SHOW_COST" = auto ] && [ "$h5u" = "-" ] && [ "
 fi
 
 out=""
-for s in ${SEGS[@]+"${SEGS[@]}"}; do out+="${out:+ ${K}·${N} }$s"; done
-printf '%s%s\n' "$PREFIX" "$out"
+for s in ${SEGS[@]+"${SEGS[@]}"}; do out+="${out:+ ${K}${SYM_SEP}${N} }$s"; done
+printf '%s%s\n' "$SYM_PREFIX" "$out"

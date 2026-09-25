@@ -10,6 +10,8 @@ UR_SETTINGS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json"
 
 . "$UR_ROOT/config.default"
 [ -f "$UR_HOME/config" ] && . "$UR_HOME/config"
+# PREFIX was renamed to SYM_PREFIX in 0.1.2; keep reading configs that set it.
+[ -z "$SYM_PREFIX" ] && [ -n "${PREFIX:-}" ] && SYM_PREFIX=$PREFIX
 
 # fmt_date <epoch> <+format>: GNU date, falling back to BSD date.
 fmt_date() {

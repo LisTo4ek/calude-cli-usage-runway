@@ -24,7 +24,8 @@ to `~/.claude/settings.json`. It keeps a backup at
 `settings.json.bak-usage-runway` and does not replace an existing status line
 without asking. The status line appears within about 10 seconds. Setup
 then asks for your working days and hours (default: every day, all day). Run
-`/usage-runway:setup` again at any time to change them.
+`/usage-runway:setup` again at any time to change them, or ask it to change
+the symbols or the prefix (for example plain ASCII if your font lacks them).
 
 ### Requirements
 
@@ -116,7 +117,9 @@ there, commented out). Changes apply on the next refresh.
 | `SHOW_COST` | `auto` | `auto`: cost only without limit data; `on`; `off`. |
 | `GUARD`, `GUARD_PCT` | `off`, `95` | Auto-stop guard. |
 | `NOTIFY`, `BELL` | `on`, `on` | Desktop notification and terminal bell for alerts. |
-| `PREFIX` | empty | Text printed before the status line, e.g. to tell several setups apart. |
+| `SYM_PREFIX` | empty | Text printed before the status line, e.g. to tell several setups apart. |
+| `SYM_ARROW`, `SYM_RESET`, `SYM_SEP` | `→`, `↻`, `·` | Projection arrow, reset marker and segment separator. |
+| `SYM_WARN`, `SYM_FULL`, `SYM_WAIT` | `⚠`, `⛔`, `…` | Hits 100% before reset (also on alerts), limit reached, no forecast yet. |
 
 Set `USAGE_RUNWAY_HOME` to keep settings and state somewhere other than
 `~/.claude/usage-runway`.
