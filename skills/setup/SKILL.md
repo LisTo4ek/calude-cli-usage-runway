@@ -1,6 +1,7 @@
 ---
 name: setup
 description: Enable, check or remove the usage-runway status line in the user's Claude Code settings, and set the working days and hours used by the weekly forecast. Use when the user runs /usage-runway:setup, asks to turn the usage-runway status line on or off, to check its status, to change their usage-runway working days or hours, or to change the symbols or prefix it shows.
+argument-hint: "[status | uninstall | Mon to Fri | 9 to 18 | arrow -> | sep / | prefix [work] | plain ASCII]"
 ---
 
 # usage-runway setup
@@ -35,6 +36,12 @@ picks "Pick each sign" do you ask the sign menus that follow it.
 
 If the user already said what they want (for example "arrow ->" or "Mon to
 Fri, 9 to 18"), skip the menu and save just that.
+
+If the user names a setting without a value (for example "prefix" or
+"arrow"), skip the main menu and ask only that setting's question in one
+AskUserQuestion call. For work days, work hours and the prefix, use its
+question from the main menu. For a sign, use its question from the sign menus.
+Mark the current value the same way as below.
 
 First run `setup.sh --status` and read the `schedule:` and `symbols:` lines.
 Add " (current)" to the option that matches each current value. If the

@@ -1,6 +1,6 @@
 {
   "name": "usage-runway",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Status line with a live forecast of your 5-hour and weekly subscription limits, per-session and per-message usage, one-time alerts and an optional auto-stop guard.",
   "author": {
     "name": "Evgheni Velcev"

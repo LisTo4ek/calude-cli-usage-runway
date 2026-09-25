@@ -29,6 +29,33 @@ prefix. Choose "Pick each sign" to set every sign on its own, or pick Other
 in any question to type your own value. Run
 `/usage-runway:setup` again at any time to change them.
 
+### Setup commands
+
+Name the change after `/usage-runway:setup` to skip the menu:
+
+| Command | Effect |
+|---|---|
+| `/usage-runway:setup` | Install the status line, then open the settings menu. |
+| `/usage-runway:setup status` | Show the current setup, schedule and signs. |
+| `/usage-runway:setup uninstall` | Remove the status line from `settings.json`. |
+| `/usage-runway:setup uninstall and purge` | Also delete `~/.claude/usage-runway` (settings and history). |
+| `/usage-runway:setup Mon to Fri` | Working days: every day, Mon–Fri, Mon–Sat, or any list such as `Mon, Wed, Fri`. |
+| `/usage-runway:setup 9 to 18` | Working hours, whole hours from 0 to 24, such as `7-15`. |
+| `/usage-runway:setup arrow ->` | Projection arrow: `→` (default), `->`, `»` or your own. |
+| `/usage-runway:setup reset @` | Reset marker: `↻` (default), `⟳`, `@` or your own. |
+| `/usage-runway:setup sep \|` | Separator: `·` (default), `\|`, `•` or your own. |
+| `/usage-runway:setup warn !` | Runs out before reset: `⚠` (default), `!`, `‼` or your own. |
+| `/usage-runway:setup full FULL` | Limit reached: `⛔` (default), `✖`, `FULL` or your own. |
+| `/usage-runway:setup wait ...` | No forecast yet: `…` (default), `...`, `?` or your own. |
+| `/usage-runway:setup plain ASCII` | All six signs at once: `Unicode defaults` or `plain ASCII`. |
+| `/usage-runway:setup prefix [home]` | Text before the status line: none, `[work]`, `[home]` or your own. |
+
+Combine several in one command, e.g. `/usage-runway:setup arrow >> sep /`.
+Name a setting without a value, e.g. `/usage-runway:setup prefix`, to get a
+menu for just that setting. A sign is 1 to 16 bytes. Signs and the prefix
+cannot contain `"`, `\`, `$`, a backtick or control characters. The guard and
+the other settings below are changed in the config file.
+
 ### Requirements
 
 - `bash` and [`jq`](https://jqlang.org) (`apt install jq`, `brew install jq`).
