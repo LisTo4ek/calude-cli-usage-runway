@@ -242,4 +242,4 @@ fi
 
 out=""
 for s in ${SEGS[@]+"${SEGS[@]}"}; do out+="${out:+ ${K}·${N} }$s"; done
-printf '%s\n' "$out"
+printf '%s%s\n' "$PREFIX" "$out"

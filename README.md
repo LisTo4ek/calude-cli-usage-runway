@@ -116,6 +116,7 @@ there, commented out). Changes apply on the next refresh.
 | `SHOW_COST` | `auto` | `auto`: cost only without limit data; `on`; `off`. |
 | `GUARD`, `GUARD_PCT` | `off`, `95` | Auto-stop guard. |
 | `NOTIFY`, `BELL` | `on`, `on` | Desktop notification and terminal bell for alerts. |
+| `PREFIX` | empty | Text printed before the status line, e.g. to tell several setups apart. |
 
 Set `USAGE_RUNWAY_HOME` to keep settings and state somewhere other than
 `~/.claude/usage-runway`.

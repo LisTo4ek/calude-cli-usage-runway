@@ -47,3 +47,6 @@ GUARD_PCT=95
 # and the terminal bell.
 NOTIFY=on
 BELL=on
+
+# Text printed before the status line, e.g. to tell several setups apart.
+PREFIX=""
