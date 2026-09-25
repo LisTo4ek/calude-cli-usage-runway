@@ -88,31 +88,35 @@ can add " (current)" to the option that matches each current value.
 ### Menu 1: style
 
 One AskUserQuestion (header "Signs"): "How do you want to change the status
-line signs?" Options:
+line signs? Pick Other to type all your signs at once." Options:
 
 - "Pick each sign (Recommended)": go to menus 2 and 3.
 - "Plain ASCII": save `SYM_ARROW="->" SYM_RESET="@" SYM_SEP="|" SYM_WARN="!" SYM_FULL="FULL" SYM_WAIT="..."`.
 - "Unicode defaults": save the defaults from the table above (all except
   `SYM_PREFIX`).
 - "Prefix only": ask only the "Prefix" question from menu 2.
+- "Other" (typed text): map what the user typed to the settings, for example
+  "arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`. If it is unclear,
+  ask again. Do not guess.
 
 ### Menu 2 and menu 3: each sign
 
 Ask menu 2 as one AskUserQuestion call with four questions, then menu 3 as
 one call with three questions. All are single-select, and the user can pick
-"Other" to type their own sign. The first option is the default, marked
-"(Recommended)". Give each option a `preview` showing an example line with
+"Other" to type their own sign. Each question ends with "Pick Other to type
+your own." as in the table, because the Other option is easy to miss. The
+first option is the default, marked "(Recommended)". Give each option a `preview` showing an example line with
 that sign, for example `5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
 
 | Menu | Header | Question | Options (setting value) |
 |---|---|---|---|
-| 2 | Prefix | "What text should come before the status line?" | "None" (empty), "[work]" (`[work] `), "[home]" (`[home] `) |
-| 2 | Arrow | "Which sign should point to the projected usage?" | "→", "->", "»" |
-| 2 | Reset | "Which sign should mark the time until reset?" | "↻", "⟳", "@" |
-| 2 | Separator | "Which sign should separate the segments?" | "·", "\|", "•" |
-| 3 | Warning | "Which sign should warn that a limit runs out before reset?" | "⚠", "!", "‼" |
-| 3 | Limit hit | "Which sign should show a limit is reached?" | "⛔", "✖", "FULL" |
-| 3 | Waiting | "Which sign should show there is no forecast yet?" | "…", "...", "?" |
+| 2 | Prefix | "What text should come before the status line? Pick Other to type your own." | "None" (empty), "[work]" (`[work] `), "[home]" (`[home] `) |
+| 2 | Arrow | "Which sign should point to the projected usage? Pick Other to type your own." | "→", "->", "»" |
+| 2 | Reset | "Which sign should mark the time until reset? Pick Other to type your own." | "↻", "⟳", "@" |
+| 2 | Separator | "Which sign should separate the segments? Pick Other to type your own." | "·", "\|", "•" |
+| 3 | Warning | "Which sign should warn that a limit runs out before reset? Pick Other to type your own." | "⚠", "!", "‼" |
+| 3 | Limit hit | "Which sign should show a limit is reached? Pick Other to type your own." | "⛔", "✖", "FULL" |
+| 3 | Waiting | "Which sign should show there is no forecast yet? Pick Other to type your own." | "…", "...", "?" |
 
 For a prefix typed with "Other", add a trailing space unless the user asked
 for none, so the prefix does not run into `5h`.
