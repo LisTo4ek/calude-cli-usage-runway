@@ -1,0 +1,52 @@
+# usage-runway settings.
+# Defaults live in the plugin's config.default; override any of them in
+# ~/.claude/usage-runway/config (created by /usage-runway:setup).
+
+# Forecast: a limit turns yellow (and alerts once) when it is projected to end
+# above this % at reset. Red when it is projected to hit 100% before reset.
+WARN_PCT=80
+
+# Burn-rate lookback windows, seconds. The forecast blends the pace over this
+# lookback with the average pace since the window started.
+LOOKBACK_5H=1800
+LOOKBACK_7D=21600
+
+# Minimum sample span before the recent pace is trusted, seconds.
+MIN_SPAN=300
+
+# Window time needed before a forecast is shown (until then: "→ …"), seconds.
+# For 7d this is weighted time, see below.
+MIN_DATA_5H=600
+MIN_DATA_7D=21600
+
+# Weekly forecast schedule: your working days (1 = Monday ... 7 = Sunday) and
+# working hours DAY_START..DAY_END (local time, 0..24). Hours outside them count
+# as NIGHT_WEIGHT of a working hour, days not in WORK_DAYS as OFF_DAY_WEIGHT.
+# The default (every day, all day) forecasts on plain wall-clock time.
+# /usage-runway:setup can set these for you.
+WORK_DAYS="1 2 3 4 5 6 7"
+DAY_START=0
+DAY_END=24
+NIGHT_WEIGHT=0.1
+OFF_DAY_WEIGHT=0.1
+
+# Cmd (usage of the current message) turns yellow / red at these 5h %.
+CMD_WARN=3
+CMD_CRIT=5
+
+# Session cost in USD: auto = only when no subscription limit data is available
+# (API-key accounts), on = always, off = never.
+SHOW_COST=auto
+
+# Guard: when on, tool calls are denied once 5h or 7d usage reaches GUARD_PCT,
+# so Claude stops and asks you whether to continue.
+GUARD=off
+GUARD_PCT=95
+
+# Desktop notification for alerts (notify-send on Linux, osascript on macOS)
+# and the terminal bell.
+NOTIFY=on
+BELL=on
+
+# Text printed before the status line, e.g. to tell several setups apart.
+PREFIX=""

@@ -1,0 +1,14 @@
+{
+  "name": "usage-runway",
+  "owner": {
+    "name": "Evgheni Velcev"
+  },
+  "description": "usage-runway: a Claude Code status line that forecasts your subscription limits.",
+  "plugins": [
+    {
+      "name": "usage-runway",
+      "source": "./",
+      "description": "Status line with a live forecast of your 5-hour and weekly subscription limits, per-session and per-message usage, one-time alerts and an optional auto-stop guard."
+    }
+  ]
+}
