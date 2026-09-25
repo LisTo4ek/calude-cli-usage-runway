@@ -29,9 +29,9 @@ if they agree, re-run with `--force`.
 ## Settings menu
 
 Run this after a successful install, and when the user asks to change their
-working days, hours, signs (symbols) or prefix. All settings are in one
-AskUserQuestion call with four single-select questions. Do not split it into
-several menus, and do not ask follow-up menus.
+working days, hours, signs (symbols) or prefix. The main menu is one
+AskUserQuestion call with four single-select questions. Only if the user
+picks "Pick each sign" do you ask the sign menus that follow it.
 
 If the user already said what they want (for example "arrow ->" or "Mon to
 Fri, 9 to 18"), skip the menu and save just that.
@@ -48,12 +48,42 @@ field, which is where the user types their own value.
 |---|---|---|
 | Work days | "Which days do you usually work? Pick Other to type your own, e.g. Mon, Wed, Fri." | "Every day (Recommended)", "Monday to Friday", "Monday to Saturday" |
 | Work hours | "Which hours do you usually work? Pick Other to type your own, e.g. 7-15." | "All day (Recommended)", "08:00 to 22:00", "09:00 to 18:00" |
-| Signs | "Which status line signs? Pick Other to set single signs, e.g. arrow -> reset @ sep \| (names: arrow, reset, sep, warn, full, wait)." | "Keep current (Recommended)", "Unicode defaults", "Plain ASCII" |
+| Signs | "Which status line signs? Pick Other to set single signs, e.g. arrow -> reset @ sep \| (names: arrow, reset, sep, warn, full, wait)." | "Keep current (Recommended)", "Pick each sign", "Unicode defaults", "Plain ASCII" |
 | Prefix | "What text should come before the status line? Pick Other to type your own." | "None (Recommended)", "[work]", "[home]" |
 
 Give each option a short `description`. For "Keep current", list the current
-signs. For the other sign sets and the prefixes, show an example line such as
+signs. For "Pick each sign", say it opens a menu with one question per sign.
+For the other sign sets and the prefixes, show an example line such as
 `5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
+
+### Sign menus
+
+Ask these only if the user picked "Pick each sign". AskUserQuestion takes at
+most four questions per call, so ask menu A as one call with four questions,
+then menu B as one call with two. All are single-select, and like the main
+menu they have no previews. Mark the option that matches the current value
+with " (current)"; if the current value matches no option, replace the third
+option with "Keep current: <value>". Give each option a `description` with an
+example line using that sign, such as `5h 20.0% -> 33.3% ↻ 02:00 (16:42) · 7d
+30.0%`.
+
+Give each sign question exactly three options. AskUserQuestion adds "Other"
+as the fourth option, and it has a text field where the user types their own
+sign right in the menu. Do not add a "Type my own" option and do not ask for
+a custom sign in a later message. Use the typed text as the value.
+
+| Menu | Header | Question | Options (setting value) |
+|---|---|---|---|
+| A | Arrow | "Which sign should point to the projected usage? Pick Other to type your own." | "→" (default), "->", "»" |
+| A | Reset | "Which sign should mark the time until reset? Pick Other to type your own." | "↻" (default), "⟳", "@" |
+| A | Separator | "Which sign should separate the segments? Pick Other to type your own." | "·" (default), "\|", "•" |
+| A | Warning | "Which sign should warn that a limit runs out before reset? Pick Other to type your own." | "⚠" (default), "!", "‼" |
+| B | Limit hit | "Which sign should show a limit is reached? Pick Other to type your own." | "⛔" (default), "✖", "FULL" |
+| B | Waiting | "Which sign should show there is no forecast yet? Pick Other to type your own." | "…" (default), "...", "?" |
+
+The option label is the setting value, so "->" in Arrow becomes
+`SYM_ARROW="->"`. Mark no option "(Recommended)"; label the default option
+"→ (default)" and so on, and drop " (default)" from the saved value.
 
 ### Map the answers
 
@@ -69,6 +99,7 @@ Days are numbered 1 = Monday to 7 = Sunday. Hours are whole hours from 0 to
 | 08:00 to 22:00 | `DAY_START=8 DAY_END=22` |
 | 09:00 to 18:00 | `DAY_START=9 DAY_END=18` |
 | Keep current (signs) | nothing |
+| Pick each sign | the answers from the sign menus |
 | Unicode defaults | the defaults from the table below, all except `SYM_PREFIX` |
 | Plain ASCII | `SYM_ARROW="->" SYM_RESET="@" SYM_SEP="\|" SYM_WARN="!" SYM_FULL="FULL" SYM_WAIT="..."` |
 | None | `SYM_PREFIX=""` |

@@ -25,7 +25,8 @@ to `~/.claude/settings.json`. It keeps a backup at
 without asking. The status line appears within about 10 seconds. Setup
 then shows one menu with your working days and hours (default: every day, all
 day), the symbols (for example plain ASCII if your font lacks them) and the
-prefix. Pick Other in any question to type your own value. Run
+prefix. Choose "Pick each sign" to set every sign on its own, or pick Other
+in any question to type your own value. Run
 `/usage-runway:setup` again at any time to change them.
 
 ### Requirements
