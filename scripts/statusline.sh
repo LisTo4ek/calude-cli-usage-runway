@@ -27,6 +27,15 @@ IFS=$'\t' read -r sid ctx cost h5u h5r d7u d7r < <(jq -r '[
 
 K=$'\e[90m'; B=$'\e[34m'; R=$'\e[31m'; Y=$'\e[33m'; G=$'\e[32m'; D=$'\e[2m'; N=$'\e[0m'
 
+# Optional background: each segment becomes a padded pill, the separators
+# between them stay on the terminal background. Resets inside a segment
+# re-apply it so the colour holds across the segment.
+BGS=""
+if bg_valid "$BG" && [ -n "$BG" ]; then
+  case $BG in *\;*) BGS=$'\e[48;2;'"$BG"'m' ;; *) BGS=$'\e[48;5;'"$BG"'m' ;; esac
+  N=$'\e[0m'"$BGS"
+fi
+
 # Rate limits arrive with each session's own API responses, so an idle session
 # holds stale values. The freshest observation is shared across sessions: a
 # session's values are fresh when its cost grew since its previous render. A
@@ -249,6 +258,9 @@ if [ "$h5u" = "-" ] && [ "$d7u" = "-" ]; then
   SEGS=("Usage runway: starting..." ${SEGS[@]+"${SEGS[@]}"})
 fi
 
-out=""
-for s in ${SEGS[@]+"${SEGS[@]}"}; do out+="${out:+ ${K}${SYM_SEP}${N} }$s"; done
+out="" RST=$'\e[0m'
+for s in ${SEGS[@]+"${SEGS[@]}"}; do
+  [ -n "$BGS" ] && s="${BGS} ${s} ${RST}"
+  out+="${out:+ ${K}${SYM_SEP}${RST} }$s"
+done
 printf '%s%s\n' "$SYM_PREFIX" "$out"

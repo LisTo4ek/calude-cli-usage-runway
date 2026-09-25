@@ -10,7 +10,7 @@
 #   setup.sh --set KEY=VALUE...      write settings to the user config
 #                                    (WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX,
 #                                    SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN,
-#                                    SYM_FULL, SYM_WAIT)
+#                                    SYM_FULL, SYM_WAIT, BG)
 #
 # Exit codes: 0 ok, 1 error, 3 another status line is configured.
 set -u
@@ -76,6 +76,7 @@ case $mode in
     echo "schedule:    days $WORK_DAYS, hours $DAY_START-$DAY_END (1 = Monday)"
     echo "symbols:     SYM_PREFIX=\"$SYM_PREFIX\" SYM_ARROW=\"$SYM_ARROW\" SYM_RESET=\"$SYM_RESET\" SYM_SEP=\"$SYM_SEP\""
     echo "             SYM_WARN=\"$SYM_WARN\" SYM_FULL=\"$SYM_FULL\" SYM_WAIT=\"$SYM_WAIT\""
+    echo "background:  BG=\"$BG\""
     awk_name=$(time_awk)
     echo "time awk:    ${awk_name:-<none: weekly forecast uses wall-clock time>}"
     ;;
@@ -112,7 +113,9 @@ case $mode in
           [[ $v =~ $prefix_re ]] || { echo "SYM_PREFIX: text without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
         SYM_ARROW|SYM_RESET|SYM_SEP|SYM_WARN|SYM_FULL|SYM_WAIT)
           [[ $v =~ $sym_re ]] || { echo "$k: 1-16 bytes (a Unicode symbol is 2-4) without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
-        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT)" >&2; exit 1 ;;
+        BG)
+          bg_valid "$v" || { echo "BG: empty, a colour index 0-255 or R;G;B (each 0-255), got: $v" >&2; exit 1; } ;;
+        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, BG)" >&2; exit 1 ;;
       esac
     done
     (( ds < de )) || { echo "DAY_START ($ds) must be before DAY_END ($de)" >&2; exit 1; }

@@ -55,3 +55,8 @@ SYM_SEP="·"
 SYM_WARN="⚠"
 SYM_FULL="⛔"
 SYM_WAIT="…"
+
+# Background of the status line: empty for none, a 256-colour index (e.g. 236)
+# or R;G;B truecolor (e.g. 40;44;52). When set, each segment is shown as a pill
+# padded with a space on each side; separators keep the terminal background.
+BG=""

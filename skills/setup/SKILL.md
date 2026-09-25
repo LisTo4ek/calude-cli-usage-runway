@@ -1,7 +1,7 @@
 ---
 name: setup
-description: Enable, check or remove the usage-runway status line in the user's Claude Code settings, and set the working days and hours used by the weekly forecast. Use when the user runs /usage-runway:setup, asks to turn the usage-runway status line on or off, to check its status, to change their usage-runway working days or hours, or to change the symbols or prefix it shows.
-argument-hint: "[status | uninstall | Mon to Fri | 9 to 18 | arrow -> | sep / | prefix [work] | plain ASCII]"
+description: Enable, check or remove the usage-runway status line in the user's Claude Code settings, and set the working days and hours used by the weekly forecast. Use when the user runs /usage-runway:setup, asks to turn the usage-runway status line on or off, to check its status, to change their usage-runway working days or hours, or to change the symbols, prefix or background it shows.
+argument-hint: "[status | uninstall | Mon to Fri | 9 to 18 | arrow -> | sep / | prefix [work] | bg 236 | plain ASCII]"
 ---
 
 # usage-runway setup
@@ -18,7 +18,7 @@ Pick the mode from the user's request (default: install):
 | check status | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --status` |
 | disable / remove | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --uninstall` |
 | remove including settings and history | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --uninstall --purge` |
-| change working days / hours, symbols (arrow, separator, …) or prefix | the settings menu below |
+| change working days / hours, symbols (arrow, separator, …), prefix or background | the settings menu below |
 
 If `${CLAUDE_PLUGIN_ROOT}` is not expanded in the command, use
 `"$(cat ~/.claude/usage-runway/plugin-root)/scripts/setup.sh"` instead.
@@ -30,9 +30,10 @@ if they agree, re-run with `--force`.
 ## Settings menu
 
 Run this after a successful install, and when the user asks to change their
-working days, hours, signs (symbols) or prefix. The main menu is one
-AskUserQuestion call with four single-select questions. Only if the user
-picks "Pick each sign" do you ask the sign menus that follow it.
+working days, hours, signs (symbols), prefix or background. The main menu is
+one AskUserQuestion call with four single-select questions, followed by one
+call with the Background question. Only if the user picks "Pick each sign" do
+you ask the sign menus that follow it.
 
 If the user already said what they want (for example "arrow ->" or "Mon to
 Fri, 9 to 18"), skip the menu and save just that.
@@ -40,10 +41,12 @@ Fri, 9 to 18"), skip the menu and save just that.
 If the user names a setting without a value (for example "prefix" or
 "arrow"), skip the main menu and ask only that setting's question in one
 AskUserQuestion call. For work days, work hours and the prefix, use its
-question from the main menu. For a sign, use its question from the sign menus.
+question from the main menu; for the background, the Background question.
+For a sign, use its question from the sign menus.
 Mark the current value the same way as below.
 
-First run `setup.sh --status` and read the `schedule:` and `symbols:` lines.
+First run `setup.sh --status` and read the `schedule:`, `symbols:` and
+`background:` lines.
 Add " (current)" to the option that matches each current value. If the
 current value matches no option, replace the third option with
 "Keep current: <value>".
@@ -57,6 +60,13 @@ field, which is where the user types their own value.
 | Work hours | "Which hours do you usually work? Pick Other to type your own, e.g. 7-15." | "All day (Recommended)", "08:00 to 22:00", "09:00 to 18:00" |
 | Signs | "Which status line signs? Pick Other to set single signs, e.g. arrow -> reset @ sep \| (names: arrow, reset, sep, warn, full, wait)." | "Keep current (Recommended)", "Pick each sign", "Unicode defaults", "Plain ASCII" |
 | Prefix | "What text should come before the status line? Pick Other to type your own." | "None (Recommended)", "[work]", "[home]" |
+
+Right after the main menu, ask the Background question as its own
+AskUserQuestion call (single-select, no preview):
+
+| Header | Question | Options |
+|---|---|---|
+| Background | "Which background for the status line segments? Each segment becomes a pill; separators keep the terminal background. Pick Other to type a 256-colour index 0-255 or R;G;B." | "None (Recommended)", "Dark grey (236)", "Slate (40;44;52)" |
 
 Give each option a short `description`. For "Keep current", list the current
 signs. For "Pick each sign", say it opens a menu with one question per sign.
@@ -111,6 +121,8 @@ Days are numbered 1 = Monday to 7 = Sunday. Hours are whole hours from 0 to
 | Plain ASCII | `SYM_ARROW="->" SYM_RESET="@" SYM_SEP="\|" SYM_WARN="!" SYM_FULL="FULL" SYM_WAIT="..."` |
 | None | `SYM_PREFIX=""` |
 | [work] / [home] | `SYM_PREFIX="[work] "` / `SYM_PREFIX="[home] "` |
+| None (background) | `BG=""` |
+| Dark grey (236) / Slate (40;44;52) | `BG="236"` / `BG="40;44;52"` |
 
 | Sign name | Setting | Default | Shown |
 |---|---|---|---|
@@ -123,8 +135,9 @@ Days are numbered 1 = Monday to 7 = Sunday. Hours are whole hours from 0 to
 | wait | `SYM_WAIT` | `…` | not enough data for a forecast yet |
 
 Convert "Other" answers the same way. "Mon, Wed, Fri" becomes
-`WORK_DAYS="1 3 5"`, "7am-3pm" becomes `DAY_START=7 DAY_END=15`, and
-"arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`. Accept the setting
+`WORK_DAYS="1 3 5"`, "7am-3pm" becomes `DAY_START=7 DAY_END=15`, ,
+"arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`, and "bg 40,44,52" or
+"background 40 44 52" becomes `BG="40;44;52"`. Accept the setting
 names and plain words too ("separator", "warning"). Notes added to an option
 that name a value count the same way. For a custom prefix, add a trailing
 space unless the user asked for none, so the prefix does not run into `5h`.
@@ -136,13 +149,14 @@ Do not guess.
 Save only the settings that differ from their current values, in one call:
 
 ```
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --set "WORK_DAYS=1 2 3 4 5" DAY_START=9 DAY_END=18 "SYM_ARROW=->" "SYM_PREFIX=[work] "
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --set "WORK_DAYS=1 2 3 4 5" DAY_START=9 DAY_END=18 "SYM_ARROW=->" "SYM_PREFIX=[work] " "BG=236"
 ```
 
 Each sign value is 1 to 16 bytes (a Unicode symbol takes 2 to 4).
 `SYM_PREFIX` can be any length, or empty to remove it. None may contain `"`,
 `\`, `$`, backtick or control characters. If the call exits with code 1, show
-the user the error and ask about that setting again. Afterwards, tell the
+the user the error and ask about that setting again. `BG` is empty, a
+colour index 0-255, or `R;G;B` with each part 0-255. Afterwards, tell the
 user the status line picks up the change on its next refresh (about 10
 seconds).
 
@@ -160,6 +174,6 @@ After a successful install and the settings menu, tell the user:
   `Usage runway: starting...`. API-key accounts always see that and context usage.
 - Settings such as the auto-stop guard (`GUARD=on`) are in
   `~/.claude/usage-runway/config`.
-- To change the working days and hours, or the signs and prefix, later, run
+- To change the working days and hours, or the signs, prefix and background, later, run
   `/usage-runway:setup` again, or name the change directly, e.g.
   `/usage-runway:setup arrow ->`.

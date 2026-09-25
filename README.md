@@ -24,8 +24,8 @@ to `~/.claude/settings.json`. It keeps a backup at
 `settings.json.bak-usage-runway` and does not replace an existing status line
 without asking. The status line appears within about 10 seconds. Setup
 then shows one menu with your working days and hours (default: every day, all
-day), the symbols (for example plain ASCII if your font lacks them) and the
-prefix. Choose "Pick each sign" to set every sign on its own, or pick Other
+day), the symbols (for example plain ASCII if your font lacks them), the
+prefix and the segment background. Choose "Pick each sign" to set every sign on its own, or pick Other
 in any question to type your own value. Run
 `/usage-runway:setup` again at any time to change them.
 
@@ -49,6 +49,7 @@ Name the change after `/usage-runway:setup` to skip the menu:
 | `/usage-runway:setup wait ...` | No forecast yet: `…` (default), `...`, `?` or your own. |
 | `/usage-runway:setup plain ASCII` | All six signs at once: `Unicode defaults` or `plain ASCII`. |
 | `/usage-runway:setup prefix [home]` | Text before the status line: none, `[work]`, `[home]` or your own. |
+| `/usage-runway:setup bg 236` | Segment background, each segment as a pill: none, a colour index `0`–`255` or `R;G;B` such as `40;44;52`. |
 
 Combine several in one command, e.g. `/usage-runway:setup arrow >> sep /`.
 Name a setting without a value, e.g. `/usage-runway:setup prefix`, to get a
@@ -149,6 +150,7 @@ there, commented out). Changes apply on the next refresh.
 | `SYM_PREFIX` | empty | Text printed before the status line, e.g. to tell several setups apart. |
 | `SYM_ARROW`, `SYM_RESET`, `SYM_SEP` | `→`, `↻`, `·` | Projection arrow, reset marker and segment separator. |
 | `SYM_WARN`, `SYM_FULL`, `SYM_WAIT` | `⚠`, `⛔`, `…` | Hits 100% before reset (also on alerts), limit reached, no forecast yet. |
+| `BG` | empty | Background of each segment, shown as separate pills: a 256-colour index (`236`) or `R;G;B` (`40;44;52`). |
 
 Set `USAGE_RUNWAY_HOME` to keep settings and state somewhere other than
 `~/.claude/usage-runway`.

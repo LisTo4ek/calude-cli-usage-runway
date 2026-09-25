@@ -222,6 +222,46 @@ for bad in '' 'a$(touch x)' 'a"b' '12345678901234567'; do
   check "setup --set rejects bad symbol" "$rc" '1'
 done
 
+fresh
+raw=$(input A 1 20 7200 | bash "$SL")
+check_not "no BG: no background codes" "$raw" $'\e[48;'
+
+fresh
+conf 'BG="236" SYM_PREFIX="[w] "'
+raw=$(input A 1 20 7200 | bash "$SL")
+P=$'\e[48;5;236m' Z=$'\e[0m'
+check "BG: prefix stays outside the pills" "$raw" "[w] $P "
+check "BG: first segment is a padded pill" "$raw" "$P "$'\e[34m5h'
+check "BG: separator has no background" "$raw" " $Z "$'\e[90m·'"$Z $P "
+check "BG: line ends with a pad and a full reset" "${raw: -5}" " $Z"
+# A pill closes with its padding and a plain reset.
+pills=$(grep -oF " $Z" <<<"$raw" | wc -l)
+check "BG: one pill per segment (5h, Ctx, Ses)" "$pills" '3'
+out=$(sed 's/\x1b\[[0-9;]*m//g' <<<"$raw")
+check "BG: pills padded on both sides" "$out" '[w]  5h 20.0%'
+check "BG: padded Ctx pill" "$out" ' ·  Ctx 12.3%  · '
+
+fresh
+conf 'BG="40;44;52"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "BG truecolor" "$raw" $'\e[48;2;40;44;52m \e[34m5h'
+
+fresh
+conf 'BG="999"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check_not "invalid BG in config is ignored" "$raw" $'\e[48;'
+
+fresh
+bash "$SETUP" --set 'BG=40;44;52' >/dev/null; rc=$?
+check "setup --set saves BG" "$rc" '0'
+check "setup --set writes BG" "$(cat "$USAGE_RUNWAY_HOME/config")" 'BG="40;44;52"'
+for bad in '256' '1;2' 'red' '1;2;300' '$(touch x)' '1;2;3;4'; do
+  bash "$SETUP" --set "BG=$bad" >/dev/null 2>&1; rc=$?
+  check "setup --set rejects bad BG ($bad)" "$rc" '1'
+done
+bash "$SETUP" --set 'BG=' >/dev/null; rc=$?
+check "setup --set clears BG" "$rc" '0'
+
 echo
 echo "$pass passed, $fail failed"
 [ "$fail" = 0 ]

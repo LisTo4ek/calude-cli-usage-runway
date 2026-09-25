@@ -13,6 +13,14 @@ UR_SETTINGS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json"
 # PREFIX was renamed to SYM_PREFIX in 0.1.2; keep reading configs that set it.
 [ -z "$SYM_PREFIX" ] && [ -n "${PREFIX:-}" ] && SYM_PREFIX=$PREFIX
 
+# bg_valid <value>: empty, a 256-colour index 0-255, or R;G;B with each 0-255.
+bg_valid() {
+  local c
+  [ -z "$1" ] && return 0
+  [[ $1 =~ ^[0-9]{1,3}(\;[0-9]{1,3}\;[0-9]{1,3})?$ ]] || return 1
+  for c in ${1//;/ }; do (( 10#$c <= 255 )) || return 1; done
+}
+
 # fmt_date <epoch> <+format>: GNU date, falling back to BSD date.
 fmt_date() {
   date -d "@$1" "$2" 2>/dev/null || date -r "$1" "$2"
