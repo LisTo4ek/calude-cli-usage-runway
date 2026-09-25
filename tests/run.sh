@@ -172,6 +172,15 @@ check "setup --set rejects shell code" "$rc" '1'
 bash "$SETUP" --set GUARD=on >/dev/null 2>&1; rc=$?
 check "setup --set rejects unsupported keys" "$rc" '1'
 check "setup --set leaves config unchanged on error" "$(cat "$USAGE_RUNWAY_HOME/config")" "$cfg"
+for bad in 'a"b' 'a\b' 'a$(touch x)' 'a`touch x`' "$(printf 'a\nb')"; do
+  bash "$SETUP" --set "PREFIX=$bad" >/dev/null 2>&1; rc=$?
+  check "setup --set rejects unsafe prefix" "$rc" '1'
+done
+bash "$SETUP" --set 'PREFIX=[work] ' >/dev/null; rc=$?
+check "setup --set saves the prefix" "$rc" '0'
+check "setup --set writes the prefix" "$(cat "$USAGE_RUNWAY_HOME/config")" 'PREFIX="[work] "'
+out=$(input A 1 20 7200 | bash "$SL" | sed 's/\x1b\[[0-9;]*m//g')
+check "status line uses the prefix set by setup" "$out" '[work] '
 
 echo
 echo "$pass passed, $fail failed"

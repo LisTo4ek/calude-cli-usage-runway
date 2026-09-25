@@ -7,8 +7,8 @@
 #   setup.sh --force    install, replacing another status line
 #   setup.sh --status   show what is configured
 #   setup.sh --uninstall [--purge]   remove the status line (--purge: also data)
-#   setup.sh --set KEY=VALUE...      write schedule settings to the user config
-#                                    (WORK_DAYS, DAY_START, DAY_END)
+#   setup.sh --set KEY=VALUE...      write settings to the user config
+#                                    (WORK_DAYS, DAY_START, DAY_END, PREFIX)
 #
 # Exit codes: 0 ok, 1 error, 3 another status line is configured.
 set -u
@@ -40,6 +40,7 @@ case $current in "$launcher"|*usage-runway*) ours=1 ;; esac
 
 # The config is sourced by bash, so only known keys with checked values are written.
 days_re='^[1-7]( [1-7])*$' hour_re='^[0-9]{1,2}$'
+prefix_re='^[^"\$`[:cntrl:]]*$'   # no quote, backslash, $, backtick or control chars
 
 ensure_config() {
   mkdir -p "$UR_HOME"
@@ -102,7 +103,9 @@ case $mode in
           [[ $v =~ $hour_re ]] && (( 10#$v <= 24 )) || { echo "$k: an hour 0-24, got: $v" >&2; exit 1; }
           v=$((10#$v))
           [ "$k" = DAY_START ] && ds=$v || de=$v ;;
-        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END)" >&2; exit 1 ;;
+        PREFIX)
+          [[ $v =~ $prefix_re ]] || { echo "PREFIX: text without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
+        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, PREFIX)" >&2; exit 1 ;;
       esac
     done
     (( ds < de )) || { echo "DAY_START ($ds) must be before DAY_END ($de)" >&2; exit 1; }
