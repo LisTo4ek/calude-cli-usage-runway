@@ -68,8 +68,8 @@ weekly forecast. The user can change both in the config file.
 
 ## Symbols
 
-Run this when the user asks to change the signs (symbols) or the prefix. These
-settings hold them:
+Run this after the schedule step of an install, and when the user asks to
+change the signs (symbols) or the prefix. These settings hold them:
 
 | Setting | Default | Shown |
 |---|---|---|
@@ -133,7 +133,7 @@ the status line picks up the change on its next refresh (about 10 seconds).
 
 ## After install
 
-After a successful install and the schedule step, tell the user:
+After a successful install and the schedule and symbols steps, tell the user:
 
 - The status line appears within about 10 seconds.
 - Limit numbers (`5h`, `7d`, `Ses`, `Cmd`) appear after the first response in a
@@ -141,3 +141,5 @@ After a successful install and the schedule step, tell the user:
   context usage and session cost instead.
 - Settings such as the auto-stop guard (`GUARD=on`) are in
   `~/.claude/usage-runway/config`.
+- To change the working days and hours, or the signs and prefix, later, run
+  `/usage-runway:setup` again and ask for that change.
