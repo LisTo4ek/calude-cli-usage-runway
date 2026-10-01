@@ -230,12 +230,14 @@ session_total() {
   find "$UR_STATE" -maxdepth 1 \( -name 'acc-*' -o -name 'turn-*' -o -name 'seen-*' -o -name 'obs-*' \) \
     -mtime +7 -delete 2>/dev/null
   SESS_TOTAL=$total
-  # One value per 5h window, oldest first, the current one last ("…" while
-  # this session has not used the current window).
+  # One value per 5h window for the last 3 windows, oldest first, the current
+  # one last ("…" while this session has not used the current window).
   SESS_SEG="${cur}%"
   if [ "$prev" != "-" ]; then
-    awk -v w="$cur" 'BEGIN { exit !(w > 0) }' || SESS_SEG="…"
-    SESS_SEG="$(printf '%s' "$prev" | sed 's/,/% | /g')% | $SESS_SEG"
+    SESS_SEG=$(awk -v p="$prev" -v w="$cur" 'BEGIN {
+      n = split(p, a, ","); s = (w > 0) ? w "%" : "…"
+      for (i = n; i > n - 2 && i > 0; i--) s = a[i] "% | " s
+      print s }')
   fi
 }
 

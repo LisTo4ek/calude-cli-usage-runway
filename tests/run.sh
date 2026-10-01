@@ -115,6 +115,9 @@ check "Ses drops a window with no usage" "$out" 'Ses 7.0% | 6.0% | …'
 check_not "Ses: one entry per used window" "$out" '| 0.0%'
 out=$(input A 6 3 57000 | line)
 check "Ses: current window value once used" "$out" 'Ses 7.0% | 6.0% | 3.0%'
+out=$(input A 6 0 75000 | line)
+check "Ses shows the last 3 windows" "$out" 'Ses 6.0% | 3.0% | …'
+check_not "Ses drops older windows" "$out" '7.0%'
 
 fresh
 echo "$((NOW + 3000)) 20 1 12.0" > "$USAGE_RUNWAY_HOME/state/acc-A"

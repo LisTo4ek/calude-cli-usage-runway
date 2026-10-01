@@ -81,7 +81,7 @@ the other settings below are changed in the config file.
 | `↻ 02:00 (16:42)` | Time until reset, and the reset time (24h; weekday prefix when not today). |
 | `7d …` | The same for the weekly limit. |
 | `Ctx 12.3%` | How full this session's context window is. |
-| `Ses 4.0%` | 5-hour-limit usage by this session since it started or since `/clear`. After a 5-hour reset it shows one value per window, oldest first and the current one last (`Ses 38.0% \| 60.0% \| 4.0%`). Earlier windows in which the session used nothing are left out; the current one shows `…` until the session uses it. |
+| `Ses 4.0%` | 5-hour-limit usage by this session since it started or since `/clear`. After a 5-hour reset it shows one value for each of the last 3 windows, oldest first and the current one last (`Ses 38.0% \| 60.0% \| 4.0%`). Earlier windows in which the session used nothing are left out; the current one shows `…` until the session uses it. |
 | `Cmd 1.0%` | 5-hour-limit usage by your last message, including all tools, skills and subagents it ran. |
 | `Usage runway: starting...` | No limit data yet: shown until the first response. |
 
