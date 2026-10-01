@@ -104,7 +104,24 @@ hook A UserPromptSubmit >/dev/null
 out=$(input A 3 33 3000 | line)
 check "Cmd restarts per message" "$out" 'Cmd 3.0%'
 out=$(input A 4 2 21000 | line)
-check "Ses continues across a 5h reset" "$out" 'Ses 9.0%'
+check "Ses splits by 5h window, oldest first" "$out" 'Ses 7.0% | 2.0%'
+check "Cmd spans a 5h reset" "$out" 'Cmd 5.0%'
+out=$(input A 5 6 21000 | line)
+check "Ses grows the current window" "$out" 'Ses 7.0% | 6.0%'
+out=$(input A 5 0 39000 | line)
+check "Ses: unused current window shows …" "$out" 'Ses 7.0% | 6.0% | …'
+out=$(input A 5 0 57000 | line)
+check "Ses drops a window with no usage" "$out" 'Ses 7.0% | 6.0% | …'
+check_not "Ses: one entry per used window" "$out" '| 0.0%'
+out=$(input A 6 3 57000 | line)
+check "Ses: current window value once used" "$out" 'Ses 7.0% | 6.0% | 3.0%'
+
+fresh
+echo "$((NOW + 3000)) 20 1 12.0" > "$USAGE_RUNWAY_HOME/state/acc-A"
+out=$(input A 2 23 3000 | line)
+check "Ses reads the old state format" "$out" 'Ses 15.0%'
+hook A UserPromptSubmit >/dev/null
+check "turn start reads the total" "$(cat "$USAGE_RUNWAY_HOME/state/turn-A")" '15.0'
 
 fresh
 out=$(input A 1 - 0 1 $((604800 - 2800)) | line)

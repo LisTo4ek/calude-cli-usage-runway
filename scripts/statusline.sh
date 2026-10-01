@@ -214,16 +214,29 @@ forecast() {
 # since its previous render, i.e. the rise came with its own API responses.
 session_total() {
   { [ "$h5u" = "-" ] || [ "$h5r" = "-" ]; } && return
-  local f="$UR_STATE/acc-$sid" r0=${h5r%.*} lr lu lc total=0.0
-  if [ -f "$f" ] && read -r lr lu lc total < "$f"; then
-    total=$(awk -v u="$h5u" -v r="$r0" -v lr="$lr" -v lu="$lu" -v c="$cost" -v lc="$lc" -v t="$total" '
-      BEGIN { if (c > lc) { d = (lr-r<300 && r-lr<300) ? u-lu : u; if (d > 0) t += d }
-              printf "%.1f", t }')
+  local f="$UR_STATE/acc-$sid" r0=${h5r%.*} lr lu lc total=0.0 cur=0.0 prev=- res
+  if [ -f "$f" ] && read -r lr lu lc total cur prev < "$f"; then
+    # cur is this session's usage in the current 5h window, prev the earlier
+    # windows (oldest first, comma-separated). Files from older versions lack both.
+    res=$(awk -v u="$h5u" -v r="$r0" -v lr="$lr" -v lu="$lu" -v c="$cost" -v lc="$lc" \
+              -v t="$total" -v w="${cur:-$total}" -v p="${prev:--}" '
+      BEGIN { same = (lr-r<300 && r-lr<300)
+              if (!same) { if (w > 0) p = (p == "-" ? "" : p ",") sprintf("%.1f", w); w = 0 }
+              if (c > lc) { d = same ? u-lu : u; if (d > 0) { t += d; w += d } }
+              printf "%.1f %.1f %s", t, w, p }')
+    read -r total cur prev <<< "$res"
   fi
-  echo "$r0 $h5u $cost $total" > "$f"
+  echo "$r0 $h5u $cost $total $cur $prev" > "$f"
   find "$UR_STATE" -maxdepth 1 \( -name 'acc-*' -o -name 'turn-*' -o -name 'seen-*' -o -name 'obs-*' \) \
     -mtime +7 -delete 2>/dev/null
   SESS_TOTAL=$total
+  # One value per 5h window, oldest first, the current one last ("…" while
+  # this session has not used the current window).
+  SESS_SEG="${cur}%"
+  if [ "$prev" != "-" ]; then
+    awk -v w="$cur" 'BEGIN { exit !(w > 0) }' || SESS_SEG="…"
+    SESS_SEG="$(printf '%s' "$prev" | sed 's/,/% | /g')% | $SESS_SEG"
+  fi
 }
 
 # This session's usage since the current message was submitted (hook.sh records
@@ -244,11 +257,11 @@ forecast seven_day 7d 604800 "$LOOKBACK_7D" "$d7u" "$d7r"
 
 [ "$ctx" != "-" ] && SEGS+=("${B}Ctx${N} $(printf '%.1f' "$ctx")%")
 
-TURN_SEG=""; SESS_TOTAL=""
+TURN_SEG=""; SESS_TOTAL=""; SESS_SEG=""
 session_total
 turn_delta
 if [ -n "$SESS_TOTAL" ]; then
-  SEGS+=("${B}Ses${N} ${SESS_TOTAL}%")
+  SEGS+=("${B}Ses${N} ${SESS_SEG}")
   [ -n "$TURN_SEG" ] && SEGS+=("${B}Cmd${N} ${TURN_SEG}")
 fi
 

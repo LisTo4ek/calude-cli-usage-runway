@@ -30,7 +30,7 @@ fi
 
 if [ "$event" = UserPromptSubmit ]; then
   total=0
-  [ -f "$UR_STATE/acc-$sid" ] && read -r _ _ _ total < "$UR_STATE/acc-$sid"
+  [ -f "$UR_STATE/acc-$sid" ] && read -r _ _ _ total _ < "$UR_STATE/acc-$sid"
   echo "${total:-0}" > "$UR_STATE/turn-$sid"
 fi
 
