@@ -273,9 +273,9 @@ if [ "$h5u" = "-" ] && [ "$d7u" = "-" ]; then
   SEGS=("Usage runway: starting..." ${SEGS[@]+"${SEGS[@]}"})
 fi
 
-out="" RST=$'\e[0m'
+out="" RST=$'\e[0m' sep=${SEP-" $SYM_SEP "}
 for s in ${SEGS[@]+"${SEGS[@]}"}; do
   [ -n "$BGS" ] && s="${BGS} ${s} ${RST}"
-  out+="${out:+ ${K}${SYM_SEP}${RST} }$s"
+  out+="${out:+${K}${sep}${RST}}$s"
 done
 printf '%s%s\n' "$SYM_PREFIX" "$out"

@@ -243,6 +243,31 @@ for bad in '' 'a$(touch x)' 'a"b' '12345678901234567'; do
 done
 
 fresh
+conf 'SEP="   "'
+out=$(input A 1 20 7200 | line)
+check "SEP: spaces only before Ctx" "$out" ')   Ctx 12.3%   Ses'
+conf 'SEP="|"'
+out=$(input A 1 20 7200 | line)
+check "SEP: no spaces around the sign" "$out" ')|Ctx 12.3%|Ses'
+conf 'SEP=""'
+out=$(input A 1 20 7200 | line)
+check "SEP: empty joins segments" "$out" ')Ctx 12.3%Ses'
+
+fresh
+bash "$SETUP" --set 'SEP=  ' >/dev/null; rc=$?
+check "setup --set saves SEP with spaces" "$rc" '0'
+check "setup --set writes SEP verbatim" "$(cat "$USAGE_RUNWAY_HOME/config")" 'SEP="  "'
+check "setup --status shows SEP" "$(bash "$SETUP" --status)" 'separator:   SEP="  "'
+out=$(input A 1 20 7200 | line)
+check "status line uses SEP set by setup" "$out" ')  Ctx 12.3%  Ses'
+for bad in 'a$(touch x)' ' " ' '123456789012345678901234567890123'; do
+  bash "$SETUP" --set "SEP=$bad" >/dev/null 2>&1; rc=$?
+  check "setup --set rejects bad SEP" "$rc" '1'
+done
+fresh
+check "setup --status: SEP unset" "$(bash "$SETUP" --status)" 'SEP unset (" · ")'
+
+fresh
 raw=$(input A 1 20 7200 | bash "$SL")
 check_not "no BG: no background codes" "$raw" $'\e[48;'
 
@@ -252,10 +277,10 @@ raw=$(input A 1 20 7200 | bash "$SL")
 P=$'\e[48;5;236m' Z=$'\e[0m'
 check "BG: prefix stays outside the pills" "$raw" "[w] $P "
 check "BG: first segment is a padded pill" "$raw" "$P "$'\e[34m5h'
-check "BG: separator has no background" "$raw" " $Z "$'\e[90m·'"$Z $P "
+check "BG: separator has no background" "$raw" " $Z"$'\e[90m · '"$Z$P "
 check "BG: line ends with a pad and a full reset" "${raw: -5}" " $Z"
-# A pill closes with its padding and a plain reset.
-pills=$(grep -oF " $Z" <<<"$raw" | wc -l)
+# Pills are joined by separators, which start with a plain reset.
+pills=$(( $(grep -oF "$Z"$'\e[90m' <<<"$raw" | wc -l) + 1 ))
 check "BG: one pill per segment (5h, Ctx, Ses)" "$pills" '3'
 out=$(sed 's/\x1b\[[0-9;]*m//g' <<<"$raw")
 check "BG: pills padded on both sides" "$out" '[w]  5h 20.0%'

@@ -45,8 +45,8 @@ question from the main menu; for the background, the Background question.
 For a sign, use its question from the sign menus.
 Mark the current value the same way as below.
 
-First run `setup.sh --status` and read the `schedule:`, `symbols:` and
-`background:` lines.
+First run `setup.sh --status` and read the `schedule:`, `symbols:`,
+`separator:` and `background:` lines.
 Add " (current)" to the option that matches each current value. If the
 current value matches no option, replace the third option with
 "Keep current: <value>".
@@ -93,7 +93,7 @@ a custom sign in a later message. Use the typed text as the value.
 |---|---|---|---|
 | A | Arrow | "Which sign should point to the projected usage? Pick Other to type your own." | "→" (default), "->", "»" |
 | A | Reset | "Which sign should mark the time until reset? Pick Other to type your own." | "↻" (default), "⟳", "@" |
-| A | Separator | "Which sign should separate the segments? Pick Other to type your own." | "·" (default), "\|", "•" |
+| A | Separator | "What should separate the segments? Pick Other to type your own, spaces included, e.g. \" \| \"." | "·" (default), "\|", "Spaces only" (`SEP="   "`) |
 | A | Warning | "Which sign should warn that a limit runs out before reset? Pick Other to type your own." | "⚠" (default), "!", "‼" |
 | B | Limit hit | "Which sign should show a limit is reached? Pick Other to type your own." | "⛔" (default), "✖", "FULL" |
 | B | Waiting | "Which sign should show there is no forecast yet? Pick Other to type your own." | "…" (default), "...", "?" |
@@ -129,14 +129,22 @@ Days are numbered 1 = Monday to 7 = Sunday. Hours are whole hours from 0 to
 | (prefix) | `SYM_PREFIX` | empty | before the whole status line, e.g. to tell setups apart |
 | arrow | `SYM_ARROW` | `→` | before the projected % |
 | reset | `SYM_RESET` | `↻` | before the time until reset |
-| sep | `SYM_SEP` | `·` | between segments |
+| sep | `SYM_SEP` | `·` | between segments, with a space on each side |
+| (separator) | `SEP` | unset | the whole text between segments, spaces included; replaces ` SYM_SEP ` |
 | warn | `SYM_WARN` | `⚠` | projected to hit 100% before reset, and before alerts |
 | full | `SYM_FULL` | `⛔` | limit reached |
 | wait | `SYM_WAIT` | `…` | not enough data for a forecast yet |
 
+A separator answer that is only spaces, or that asks for different spacing
+around the sign (for example "no spaces around |"), goes to `SEP` with exactly
+the text between segments. Any other separator answer goes to `SYM_SEP`, and
+then save `SEP` as well only if it is currently set (see the `separator:` line
+of `--status`), since `SEP` takes precedence: `SEP=" <sign> "`.
+
 Convert "Other" answers the same way. "Mon, Wed, Fri" becomes
 `WORK_DAYS="1 3 5"`, "7am-3pm" becomes `DAY_START=7 DAY_END=15`, ,
-"arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`, and "bg 40,44,52" or
+"arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`, "only spaces between
+the segments" becomes `SEP="   "`, and "bg 40,44,52" or
 "background 40 44 52" becomes `BG="40;44;52"`. Accept the setting
 names and plain words too ("separator", "warning"). Notes added to an option
 that name a value count the same way. For a custom prefix, add a trailing
@@ -152,7 +160,8 @@ Save only the settings that differ from their current values, in one call:
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --set "WORK_DAYS=1 2 3 4 5" DAY_START=9 DAY_END=18 "SYM_ARROW=->" "SYM_PREFIX=[work] " "BG=236"
 ```
 
-Each sign value is 1 to 16 bytes (a Unicode symbol takes 2 to 4).
+Each sign value is 1 to 16 bytes (a Unicode symbol takes 2 to 4). `SEP` is 0
+to 32 bytes, spaces included.
 `SYM_PREFIX` can be any length, or empty to remove it. None may contain `"`,
 `\`, `$`, backtick or control characters. If the call exits with code 1, show
 the user the error and ask about that setting again. `BG` is empty, a

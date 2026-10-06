@@ -149,6 +149,7 @@ there, commented out). Changes apply on the next refresh.
 | `NOTIFY`, `BELL` | `on`, `on` | Desktop notification and terminal bell for alerts. |
 | `SYM_PREFIX` | empty | Text printed before the status line, e.g. to tell several setups apart. |
 | `SYM_ARROW`, `SYM_RESET`, `SYM_SEP` | `→`, `↻`, `·` | Projection arrow, reset marker and segment separator. |
+| `SEP` | unset | The whole text between segments, spaces included, e.g. `"   "` for spaces only or `" \| "`. Unset means `SYM_SEP` with a space on each side. |
 | `SYM_WARN`, `SYM_FULL`, `SYM_WAIT` | `⚠`, `⛔`, `…` | Hits 100% before reset (also on alerts), limit reached, no forecast yet. |
 | `BG` | empty | Background of each segment, shown as separate pills: a 256-colour index (`236`) or `R;G;B` (`40;44;52`). |
 
