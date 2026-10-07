@@ -86,7 +86,7 @@ case $mode in
     if [ -n "${SEP+x}" ]; then echo "separator:   SEP=\"$SEP\""
     else echo "separator:   SEP unset (\" $SYM_SEP \")"; fi
     echo "background:  BG=\"$BG\""
-    echo "colors:     COLOR_TEXT=\"$COLOR_TEXT\" COLOR_PREFIX=\"$COLOR_PREFIX\" COLOR_LABEL=\"$COLOR_LABEL\""
+    echo "colors:      COLOR_TEXT=\"$COLOR_TEXT\" COLOR_PREFIX=\"$COLOR_PREFIX\" COLOR_LABEL=\"$COLOR_LABEL\""
     echo "             COLOR_MUTED=\"$COLOR_MUTED\" COLOR_SEP=\"$COLOR_SEP\" COLOR_FAINT=\"$COLOR_FAINT\""
     echo "             COLOR_GREEN=\"$COLOR_GREEN\" COLOR_YELLOW=\"$COLOR_YELLOW\" COLOR_RED=\"$COLOR_RED\""
     awk_name=$(time_awk)
