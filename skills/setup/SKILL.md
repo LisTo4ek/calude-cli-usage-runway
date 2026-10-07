@@ -127,7 +127,7 @@ It shows three sample lines (on track, warning, runs out) rendered by the
 status line with the real colors and background, the list of color
 settings and the 256-color palette. Keys: ↑/↓ choose a setting, ←/→ step
 through the 256 colors, `[` `]` jump a palette row, `{` `}` step by 6, `t`
-type a value, `e` terminal default, `d` dim, `u` undo, Enter saves, `q` quits
+type a value, `e` empty (main color; for COLOR_TEXT the terminal default), `d` dim, `u` undo, Enter saves, `q` quits
 without saving. Saved colors reach the status line on its next refresh.
 For the other sign sets and the prefixes, show an example line such as
 `5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
@@ -179,10 +179,11 @@ option label is the hex value to save, e.g. "#d75f5f" becomes
 | D | Labels | "Which color for the segment names (5h, 7d, Ctx, Ses, Cmd)? Pick Other to type your own." | "#5f87d7 (default)", "#87afd7", "#5fafaf" |
 | D | Separator | "Which color for the separator between segments? Pick Other to type your own." | "#6c6c6c (default)", "#444444", "#a8a8a8" |
 | D | Faint | "Which color for the time until reset? Pick Other to type your own." | "#8a8a8a (default)", "#6c6c6c", "dim" |
-| D | Text | "Which color for other text (Ctx %, Ses %, Cmd %)? Pick Other to type your own." | "Terminal default (default)", "#d0d0d0", "#ffffff" |
+| D | Text | "Which main color for every panel (also Ctx %, Ses %, Cmd %)? Pick Other to type your own." | "Terminal default (default)", "#d0d0d0", "#ffffff" |
 
 The prefix color (`COLOR_PREFIX`) has no menu question; set it from an Other
 answer or the interactive picker. "Terminal default" saves an empty value.
+Any other color left empty shows in the Text color.
 `setup.sh --set` saves every color as `#rrggbb`, except indexes 0-15 (the
 terminal's own palette, which follows its theme), `dim` and empty.
 
@@ -238,8 +239,9 @@ the segments" becomes `SEP="   "`, and "bg 40,44,52" or
 `COLOR_RED="#b44141"` (the names text, prefix, labels, muted, separator,
 faint, green, yellow and red map to `COLOR_TEXT`, `COLOR_PREFIX`,
 `COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP`, `COLOR_FAINT`, `COLOR_GREEN`,
-`COLOR_YELLOW` and `COLOR_RED`; empty means the terminal's default text
-color, and hex works with or without `#`). Accept the setting
+`COLOR_YELLOW` and `COLOR_RED`; `COLOR_TEXT` is the main color of every
+panel, any other color left empty shows in it, `COLOR_TEXT` empty is the
+terminal's default text color, and hex works with or without `#`). Accept the setting
 names and plain words too ("separator", "warning", and "colour" for color). Notes added to an option
 that name a value count the same way. For a custom prefix, add a trailing
 space unless the user asked for none, so the prefix does not run into `5h`.

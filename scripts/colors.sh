@@ -17,7 +17,7 @@ fi
 command -v jq >/dev/null 2>&1 || { echo "usage-runway needs jq" >&2; exit 1; }
 
 KEYS=(BG COLOR_TEXT COLOR_LABEL COLOR_MUTED COLOR_SEP COLOR_FAINT COLOR_GREEN COLOR_YELLOW COLOR_RED COLOR_PREFIX)
-DESC=("segment background" "other text: Ctx, Ses, Cmd" "segment names: 5h, 7d, Ctx" "arrow and reset sign"
+DESC=("segment background" "main color of every panel" "segment names: 5h, 7d, Ctx" "arrow and reset sign"
       "separator" "time until reset" "on track" "warning, Cmd at CMD_WARN" "runs out, Cmd at CMD_CRIT"
       "prefix text")
 VALS=() ORIG=()
@@ -116,13 +116,15 @@ draw() {
   local i v h
   printf '\e[H\e[2J'
   printf 'usage-runway colors   ↑/↓ setting  ←/→ color  [ ] row  { } block\n'
-  printf '                       t type a value  e terminal default  d dim  u undo  Enter save  q quit\n\n'
+  printf '                       t type a value  e empty (main color)  d dim  u undo  Enter save  q quit\n\n'
   render
   printf '\n'
   for i in "${!KEYS[@]}"; do
     v=${VALS[$i]} h=$(hex_of "$v")
     [ "$h" = "$v" ] && h=""
-    [ -z "$v" ] && v="(terminal default)"
+    if [ -z "$v" ]; then
+      case ${KEYS[$i]} in BG) v="(none)" ;; COLOR_TEXT) v="(terminal default)" ;; *) v="(main color)" ;; esac
+    fi
     if (( i == sel )); then printf '\e[7m> %-13s %-24s %s\e[0m' "${KEYS[$i]}" "$v${h:+  $h}" "${DESC[$i]}"
     else printf '  %-13s %-24s %s' "${KEYS[$i]}" "$v${h:+  $h}" "${DESC[$i]}"; fi
     [ "${VALS[$i]}" != "${ORIG[$i]}" ] && printf '  *'

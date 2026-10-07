@@ -360,6 +360,12 @@ check "COLOR_PREFIX colors the prefix" "$raw" $'\e[31m[w] \e[0m'
 check "COLOR_SEP colors the separator" "$raw" $'\e[38;2;0;0;128m · '
 check "COLOR_TEXT colors plain text" "$raw" $'\e[0m\e[37m 12.3%'
 check "COLOR_FAINT colors the reset time" "$raw" $'\e[38;5;244m02:00'
+conf 'COLOR_LABEL="" COLOR_SEP="" COLOR_PREFIX="" COLOR_GREEN=""'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "empty COLOR_LABEL shows in COLOR_TEXT" "$raw" $'\e[37m5h'
+check "empty COLOR_GREEN shows in COLOR_TEXT" "$raw" $'\e[0m\e[37m 20.0%'
+check "empty COLOR_SEP shows in COLOR_TEXT" "$raw" $'\e[37m · '
+check "empty COLOR_PREFIX shows in COLOR_TEXT" "$raw" $'\e[37m[w] \e[0m'
 
 fresh
 bash "$SETUP" --set 'BG=40;44;52' >/dev/null; rc=$?

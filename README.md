@@ -159,15 +159,17 @@ there, commented out). Changes apply on the next refresh.
 | `SYM_ARROW`, `SYM_RESET`, `SYM_SEP` | `→`, `↻`, `·` | Projection arrow, reset marker and segment separator. |
 | `SEP` | unset | The whole text between segments, spaces included, e.g. `"   "` for spaces only or `" \| "`. Unset means `SYM_SEP` with a space on each side. |
 | `SYM_WARN`, `SYM_FULL`, `SYM_WAIT` | `⚠`, `⛔`, `…` | Hits 100% before reset (also on alerts), limit reached, no forecast yet. |
-| `BG` | empty | Background of each segment, shown as separate pills: a 256-color index (`236`), `R;G;B` (`40;44;52`) or `#rrggbb`. |
-| `COLOR_TEXT`, `COLOR_PREFIX` | empty, empty | Other text (`Ctx`, `Ses`, `Cmd` values) and the prefix. |
-| `COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP` | `4`, `8`, `8` | Segment names (`5h`, `Ctx`, …), the arrow and reset sign, and the separator. |
-| `COLOR_FAINT` | `dim` | Time until reset, and usage before a forecast exists. |
-| `COLOR_GREEN`, `COLOR_YELLOW`, `COLOR_RED` | `2`, `3`, `1` | On track, warning, runs out. |
+| `BG` | empty | Background of each segment, shown as separate pills, e.g. `#303030`. |
+| `COLOR_TEXT` | empty | Main color of every panel, also used for the `Ctx`, `Ses` and `Cmd` values. Empty is the terminal's default text color. |
+| `COLOR_PREFIX` | empty | The prefix. |
+| `COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP` | `#5f87d7`, `#808080`, `#6c6c6c` | Segment names (`5h`, `Ctx`, …), the arrow and reset sign, and the separator. |
+| `COLOR_FAINT` | `#8a8a8a` | Time until reset, and usage before a forecast exists. |
+| `COLOR_GREEN`, `COLOR_YELLOW`, `COLOR_RED` | `#5faf5f`, `#d7af5f`, `#d75f5f` | On track, warning, runs out. |
 
-Each color is a 256-color index (0-15 are the terminal's own palette, so
-they follow its theme), `R;G;B`, `#rrggbb` or `rrggbb` (e.g.
-`COLOR_RED="d75f5f"`), `dim`, or empty for the terminal's default text color.
+Each color is `#rrggbb` or `rrggbb` (e.g. `COLOR_RED="d75f5f"`), `R;G;B`, a
+256-color index (0-15 are the terminal's own palette, so they follow its
+theme), `dim`, or empty. Setup saves colors as `#rrggbb`. Any color left
+empty shows in `COLOR_TEXT`.
 To choose them with the arrow keys on a live preview, run the color picker
 in a terminal:
 

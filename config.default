@@ -66,9 +66,11 @@ BG=""
 
 # Colors, saved as #rrggbb. Also accepted: rrggbb, R;G;B, a 256-color
 # index (setup saves 16-255 as hex; 0-15 stay numbers, they are the terminal's
-# own palette and follow its theme), dim (the terminal's faint text), or empty
-# for the terminal's default text color. The background is BG above.
-COLOR_TEXT=""           # other text: Ctx %, Ses %, Cmd % below CMD_WARN
+# own palette and follow its theme), dim (the terminal's faint text), or empty.
+# COLOR_TEXT is the main color of every panel: any other color left empty
+# shows in COLOR_TEXT, and COLOR_TEXT empty is the terminal's default text
+# color. The background is BG above.
+COLOR_TEXT=""           # main color: Ctx %, Ses %, Cmd % below CMD_WARN
 COLOR_PREFIX=""         # SYM_PREFIX
 COLOR_LABEL="#5f87d7"   # segment names: 5h, 7d, Ctx, Ses, Cmd
 COLOR_MUTED="#808080"   # arrow and reset sign

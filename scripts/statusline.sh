@@ -25,8 +25,10 @@ IFS=$'\t' read -r sid ctx cost h5u h5r d7u d7r < <(jq -r '[
   (.rate_limits.seven_day.resets_at // "-")
 ] | @tsv' <<<"$in")
 
-# Colors from the config: empty means the terminal's default text color, an
-# invalid value falls back to the default from config.default.
+# Colors from the config. COLOR_TEXT is the main color of every panel: each
+# panel starts in it and every reset returns to it, so any other color left
+# empty shows in COLOR_TEXT (and COLOR_TEXT empty is the terminal's default).
+# An invalid value falls back to the default from config.default.
 fg_color() {  # fg_color <value> <default value>
   local v=$1
   color_valid "$v" || v=$2
@@ -36,6 +38,8 @@ K=$(fg_color "$COLOR_MUTED" '#808080'); B=$(fg_color "$COLOR_LABEL" '#5f87d7')
 R=$(fg_color "$COLOR_RED" '#d75f5f'); Y=$(fg_color "$COLOR_YELLOW" '#d7af5f'); G=$(fg_color "$COLOR_GREEN" '#5faf5f')
 D=$(fg_color "$COLOR_FAINT" '#8a8a8a'); SC=$(fg_color "$COLOR_SEP" '#6c6c6c')
 T=$(fg_color "$COLOR_TEXT" ''); PC=$(fg_color "$COLOR_PREFIX" '')
+# The prefix and separator sit outside the panels, so they need it explicitly.
+SC=${SC:-$T} PC=${PC:-$T}
 N=$'\e[0m'"$T"
 
 # Optional background: each segment becomes a padded pill, the separators
