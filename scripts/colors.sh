@@ -22,7 +22,7 @@ DESC=("segment background" "main color of every panel" "segment names: 5h, 7d, C
       "prefix text")
 VALS=() ORIG=()
 for k in "${KEYS[@]}"; do VALS+=("${!k}"); ORIG+=("${!k}"); done
-sel=0 msg=""
+sel=0 msg="" PREVIEW="" PREVIEW_KEY=""
 
 tmp=$(mktemp -d) || exit 1
 cleanup() { printf '\e[0m\e[?25h\e[?1049l'; stty "$stty_saved" 2>/dev/null; rm -rf "$tmp"; }
@@ -37,22 +37,32 @@ now=$(date +%s) r5=$(( $(date +%s) + 7200 ))
 SAMPLE_U=(20 55 70) SAMPLE_ACC=("18 0.5 4.0 4.0 -" "54 0.5 2.0 2.0 -" "64 0.5 10.0 10.0 -") SAMPLE_TURN=(3.0 2.0 6.0)
 for i in 0 1 2; do mkdir -p "$tmp/h$i/state"; done
 
-render() {  # render: print the three preview lines with the current values
-  local i j
+render() {  # render: set PREVIEW to the three preview lines, re-rendering
+  # only when a value changed (moving between settings costs nothing)
+  local i j key IFS=$'\x1f'
+  key="${VALS[*]}"
+  [ "$key" = "$PREVIEW_KEY" ] && return
+  IFS=$' \t\n'
   for i in 0 1 2; do
-    rm -f "$tmp/h$i/state/"*
-    { [ -f "$UR_HOME/config" ] && cat "$UR_HOME/config"
-      echo 'NOTIFY=off BELL=off'
-      for j in "${!KEYS[@]}"; do echo "${KEYS[$j]}=\"${VALS[$j]}\""; done
-    } > "$tmp/h$i/config"
-    echo "$r5 ${SAMPLE_ACC[$i]}" > "$tmp/h$i/state/acc-preview"
-    echo "${SAMPLE_TURN[$i]}" > "$tmp/h$i/state/turn-preview"
-    jq -n --argjson u "${SAMPLE_U[$i]}" --argjson r "$r5" --argjson t "$now" \
-      '{session_id: "preview", cost: {total_cost_usd: 1}, context_window: {used_percentage: 12.3},
-        rate_limits: {five_hour: {used_percentage: $u, resets_at: $r},
-                      seven_day: {used_percentage: 30, resets_at: ($t + 345600)}}}' \
-      | USAGE_RUNWAY_HOME="$tmp/h$i" CLAUDE_CONFIG_DIR="$tmp/h$i" bash "$UR_ROOT/scripts/statusline.sh"
+    (
+      rm -f "$tmp/h$i/state/"*
+      { [ -f "$UR_HOME/config" ] && cat "$UR_HOME/config"
+        echo 'NOTIFY=off BELL=off'
+        for j in "${!KEYS[@]}"; do echo "${KEYS[$j]}=\"${VALS[$j]}\""; done
+      } > "$tmp/h$i/config"
+      echo "$r5 ${SAMPLE_ACC[$i]}" > "$tmp/h$i/state/acc-preview"
+      echo "${SAMPLE_TURN[$i]}" > "$tmp/h$i/state/turn-preview"
+      jq -n --argjson u "${SAMPLE_U[$i]}" --argjson r "$r5" --argjson t "$now" \
+        '{session_id: "preview", cost: {total_cost_usd: 1}, context_window: {used_percentage: 12.3},
+          rate_limits: {five_hour: {used_percentage: $u, resets_at: $r},
+                        seven_day: {used_percentage: 30, resets_at: ($t + 345600)}}}' \
+        | USAGE_RUNWAY_HOME="$tmp/h$i" CLAUDE_CONFIG_DIR="$tmp/h$i" bash "$UR_ROOT/scripts/statusline.sh" \
+        > "$tmp/out$i"
+    ) &
   done
+  wait
+  PREVIEW=$(cat "$tmp/out0" "$tmp/out1" "$tmp/out2")
+  PREVIEW_KEY=$key
 }
 
 hex_of() {  # hex_of <value>: the hex code shown next to a value
@@ -91,34 +101,22 @@ step() {  # step <delta>: move the selected value through the 256 colors
 }
 
 palette() {  # palette: the 256 colors, the selected value marked
-  local cur n row c mark
+  local cur n mark
   cur=$(index_of "${VALS[$sel]}")
-  for n in $(seq 0 15); do
+  for (( n = 0; n < 256; n++ )); do
     mark="  "; (( n == cur )) && mark="[]"
-    printf '%s%s' "$(color_code "$n" 48)" "$mark"
+    if (( n < 8 )); then printf '\e[%sm%s' "$((40 + n))" "$mark"
+    elif (( n < 16 )); then printf '\e[%sm%s' "$((92 + n))" "$mark"
+    else printf '\e[48;5;%sm%s' "$n" "$mark"; fi
+    case $n in 15|51|87|123|159|195|231|255) printf '\e[0m\n' ;; esac
   done
-  printf '\e[0m\n'
-  for row in 0 1 2 3 4 5; do
-    for c in $(seq 0 35); do
-      n=$(( 16 + row * 36 + c )); mark="  "; (( n == cur )) && mark="[]"
-      printf '\e[48;5;%sm%s' "$n" "$mark"
-    done
-    printf '\e[0m\n'
-  done
-  for n in $(seq 232 255); do
-    mark="  "; (( n == cur )) && mark="[]"
-    printf '\e[48;5;%sm%s' "$n" "$mark"
-  done
-  printf '\e[0m\n'
 }
 
-draw() {
+frame() {  # frame: the whole screen as text
   local i v h
-  printf '\e[H\e[2J'
   printf 'usage-runway colors   ↑/↓ setting  ←/→ color  [ ] row  { } block\n'
   printf '                       t type a value  e empty (main color)  d dim  u undo  Enter save  q quit\n\n'
-  render
-  printf '\n'
+  printf '%s\n\n' "$PREVIEW"
   for i in "${!KEYS[@]}"; do
     v=${VALS[$i]} h=$(hex_of "$v")
     [ "$h" = "$v" ] && h=""
@@ -133,7 +131,18 @@ draw() {
   printf '\n'
   palette
   [ -n "$msg" ] && printf '\n%s\n' "$msg"
+}
+
+# Build the frame first, then paint it over the previous one in a single write:
+# no screen clear, each line ends with "clear to end of line", and "clear
+# below" removes leftovers, so unchanged parts never blink.
+draw() {
+  local f
+  render
+  f=$(frame)
   msg=""
+  f=${f//$'\n'/$'\e[K\n'}
+  printf '\e[H%s\e[K\e[J' "$f"
 }
 
 read_key() {  # read_key: one key, arrows and page keys as names
