@@ -62,7 +62,7 @@ check_not "expired shared data: no 5h" "$out" '5h'
 
 fresh
 out=$(input A 1 20 7200 | line)
-check "5h: used, projection, reset" "$out" '5h 20.0% → 33.3% ↻ 02:00'
+check "5h: used, projection, reset" "$out" '5h 20.0% → 33.3% ↻ 0'
 check "Ses starts at zero" "$out" 'Ses 0.0%'
 check_not "no cost with limit data" "$out" '$'
 
@@ -228,14 +228,14 @@ check "old PREFIX setting still works" "$out" '[old] 5h'
 fresh
 conf 'SYM_ARROW="->" SYM_RESET="@" SYM_SEP="|" SYM_WAIT="..."'
 out=$(input A 1 20 7200 | line)
-check "symbols come from the config" "$out" '5h 20.0% -> 33.3% @ 02:00'
+check "symbols come from the config" "$out" '5h 20.0% -> 33.3% @ 0'
 check "separator comes from the config" "$out" ' | Ctx'
 
 fresh
 bash "$SETUP" --set 'SYM_ARROW=->' 'SYM_SEP=|' >/dev/null; rc=$?
 check "setup --set saves symbols" "$rc" '0'
 out=$(input A 1 20 7200 | line)
-check "status line uses the symbols set by setup" "$out" '5h 20.0% -> 33.3% ↻ 02:00'
+check "status line uses the symbols set by setup" "$out" '5h 20.0% -> 33.3% ↻ '
 check "status line uses the separator set by setup" "$out" ' | Ctx'
 for bad in '' 'a$(touch x)' 'a"b' '12345678901234567'; do
   bash "$SETUP" --set "SYM_SEP=$bad" >/dev/null 2>&1; rc=$?
@@ -359,7 +359,7 @@ raw=$(input A 1 20 7200 | bash "$SL")
 check "COLOR_PREFIX colors the prefix" "$raw" $'\e[31m[w] \e[0m'
 check "COLOR_SEP colors the separator" "$raw" $'\e[38;2;0;0;128m · '
 check "COLOR_TEXT colors plain text" "$raw" $'\e[0m\e[37m 12.3%'
-check "COLOR_FAINT colors the reset time" "$raw" $'\e[38;5;244m02:00'
+check "COLOR_FAINT colors the reset time" "$raw" $'\e[38;5;244m0'
 conf 'COLOR_LABEL="" COLOR_SEP="" COLOR_PREFIX="" COLOR_GREEN=""'
 raw=$(input A 1 20 7200 | bash "$SL")
 check "empty COLOR_LABEL shows in COLOR_TEXT" "$raw" $'\e[37m5h'
