@@ -297,6 +297,47 @@ raw=$(input A 1 20 7200 | bash "$SL")
 check_not "invalid BG in config is ignored" "$raw" $'\e[48;'
 
 fresh
+conf 'BG="#282c34"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "BG #rrggbb" "$raw" $'\e[48;2;40;44;52m \e[34m5h'
+
+fresh
+conf 'COLOR_GREEN="#b44141"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "COLOR_GREEN #rrggbb" "$raw" $'\e[38;2;180;65;65m20.0%'
+conf 'COLOR_GREEN="120"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "COLOR_GREEN colour index" "$raw" $'\e[38;5;120m20.0%'
+conf 'COLOR_GREEN="red"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "invalid COLOR_GREEN keeps the default" "$raw" $'\e[32m20.0%'
+conf 'COLOR_GREEN=""'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "empty COLOR_GREEN: default text colour" "$raw" $'\e[0m 20.0%'
+conf 'COLOR_LABEL="#000080" COLOR_MUTED="12"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "COLOR_LABEL colours segment names" "$raw" $'\e[38;2;0;0;128m5h'
+check "COLOR_MUTED 8-15 uses bright ANSI" "$raw" $'\e[94m→'
+
+fresh
+conf 'COLOR_RED="#b44141"'
+input A 1 20 7200 | bash "$SL" >/dev/null
+hook A UserPromptSubmit >/dev/null
+raw=$(input A 2 30 7200 | bash "$SL")
+check "COLOR_RED colours a critical Cmd" "$raw" $'\e[38;2;180;65;65m10.0%'
+check_not "COLOR_RED replaces the default red" "$raw" $'\e[31m'
+
+fresh
+bash "$SETUP" --set 'COLOR_RED=#b44141' 'COLOR_YELLOW=214' 'COLOR_GREEN=40;160;80' >/dev/null; rc=$?
+check "setup --set saves colours" "$rc" '0'
+check "setup --set writes COLOR_RED" "$(cat "$USAGE_RUNWAY_HOME/config")" 'COLOR_RED="#b44141"'
+check "setup --status shows colours" "$(bash "$SETUP" --status)" 'COLOR_YELLOW="214" COLOR_RED="#b44141"'
+for bad in 'red' '#b4414' '#b44141ff' '256' '$(touch x)'; do
+  bash "$SETUP" --set "COLOR_RED=$bad" >/dev/null 2>&1; rc=$?
+  check "setup --set rejects bad COLOR_RED ($bad)" "$rc" '1'
+done
+
+fresh
 bash "$SETUP" --set 'BG=40;44;52' >/dev/null; rc=$?
 check "setup --set saves BG" "$rc" '0'
 check "setup --set writes BG" "$(cat "$USAGE_RUNWAY_HOME/config")" 'BG="40;44;52"'

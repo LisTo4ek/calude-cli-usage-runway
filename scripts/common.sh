@@ -13,12 +13,27 @@ UR_SETTINGS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json"
 # PREFIX was renamed to SYM_PREFIX in 0.1.2; keep reading configs that set it.
 [ -z "$SYM_PREFIX" ] && [ -n "${PREFIX:-}" ] && SYM_PREFIX=$PREFIX
 
-# bg_valid <value>: empty, a 256-colour index 0-255, or R;G;B with each 0-255.
-bg_valid() {
+# color_valid <value>: empty, a 256-colour index 0-255, R;G;B with each 0-255,
+# or #rrggbb.
+color_valid() {
   local c
   [ -z "$1" ] && return 0
+  [[ $1 =~ ^#[0-9a-fA-F]{6}$ ]] && return 0
   [[ $1 =~ ^[0-9]{1,3}(\;[0-9]{1,3}\;[0-9]{1,3})?$ ]] || return 1
   for c in ${1//;/ }; do (( 10#$c <= 255 )) || return 1; done
+}
+
+# color_code <value> <38|48>: the foreground (38) or background (48) escape
+# for a valid non-empty colour value. Indexes 0-15 use the basic ANSI codes
+# (e.g. 1 is \e[31m), so they follow the terminal's own palette.
+color_code() {
+  local v=$1 n
+  [[ $v == \#* ]] && v="$((16#${v:1:2}));$((16#${v:3:2}));$((16#${v:5:2}))"
+  case $v in *\;*) printf '\e[%s;2;%sm' "$2" "$v"; return ;; esac
+  n=$((10#$v))
+  if (( n < 8 )); then printf '\e[%sm' "$(( $2 - 8 + n ))"
+  elif (( n < 16 )); then printf '\e[%sm' "$(( $2 + 52 + n - 8 ))"
+  else printf '\e[%s;5;%sm' "$2" "$n"; fi
 }
 
 # fmt_date <epoch> <+format>: GNU date, falling back to BSD date.

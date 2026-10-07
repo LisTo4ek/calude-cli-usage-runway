@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Enable, check or remove the usage-runway status line in the user's Claude Code settings, and set the working days and hours used by the weekly forecast. Use when the user runs /usage-runway:setup, asks to turn the usage-runway status line on or off, to check its status, to change their usage-runway working days or hours, or to change the symbols, prefix or background it shows.
+description: Enable, check or remove the usage-runway status line in the user's Claude Code settings, and set the working days and hours used by the weekly forecast. Use when the user runs /usage-runway:setup, asks to turn the usage-runway status line on or off, to check its status, to change their usage-runway working days or hours, or to change the symbols, prefix, background or colours it shows.
 argument-hint: "[status | uninstall | Mon to Fri | 9 to 18 | arrow -> | sep / | prefix [work] | bg 236 | plain ASCII]"
 ---
 
@@ -18,7 +18,7 @@ Pick the mode from the user's request (default: install):
 | check status | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --status` |
 | disable / remove | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --uninstall` |
 | remove including settings and history | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --uninstall --purge` |
-| change working days / hours, symbols (arrow, separator, …), prefix or background | the settings menu below |
+| change working days / hours, symbols (arrow, separator, …), prefix, background or colours | the settings menu below |
 
 If `${CLAUDE_PLUGIN_ROOT}` is not expanded in the command, use
 `"$(cat ~/.claude/usage-runway/plugin-root)/scripts/setup.sh"` instead.
@@ -145,7 +145,10 @@ Convert "Other" answers the same way. "Mon, Wed, Fri" becomes
 `WORK_DAYS="1 3 5"`, "7am-3pm" becomes `DAY_START=7 DAY_END=15`, ,
 "arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`, "only spaces between
 the segments" becomes `SEP="   "`, and "bg 40,44,52" or
-"background 40 44 52" becomes `BG="40;44;52"`. Accept the setting
+"background 40 44 52" becomes `BG="40;44;52"`, and "red #b44141" becomes
+`COLOR_RED="#b44141"` (also `COLOR_YELLOW`, `COLOR_GREEN`, `COLOR_LABEL` for
+segment names and `COLOR_MUTED` for signs; defaults `1`, `3`, `2`, `4`, `8`;
+empty means the terminal's default text colour). Accept the setting
 names and plain words too ("separator", "warning"). Notes added to an option
 that name a value count the same way. For a custom prefix, add a trailing
 space unless the user asked for none, so the prefix does not run into `5h`.
@@ -164,8 +167,9 @@ Each sign value is 1 to 16 bytes (a Unicode symbol takes 2 to 4). `SEP` is 0
 to 32 bytes, spaces included.
 `SYM_PREFIX` can be any length, or empty to remove it. None may contain `"`,
 `\`, `$`, backtick or control characters. If the call exits with code 1, show
-the user the error and ask about that setting again. `BG` is empty, a
-colour index 0-255, or `R;G;B` with each part 0-255. Afterwards, tell the
+the user the error and ask about that setting again. `BG` and the `COLOR_*`
+settings are empty, a colour index 0-255, `R;G;B` with each part 0-255, or
+`#rrggbb`. Afterwards, tell the
 user the status line picks up the change on its next refresh (about 10
 seconds).
 

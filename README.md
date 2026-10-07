@@ -151,7 +151,9 @@ there, commented out). Changes apply on the next refresh.
 | `SYM_ARROW`, `SYM_RESET`, `SYM_SEP` | `→`, `↻`, `·` | Projection arrow, reset marker and segment separator. |
 | `SEP` | unset | The whole text between segments, spaces included, e.g. `"   "` for spaces only or `" \| "`. Unset means `SYM_SEP` with a space on each side. |
 | `SYM_WARN`, `SYM_FULL`, `SYM_WAIT` | `⚠`, `⛔`, `…` | Hits 100% before reset (also on alerts), limit reached, no forecast yet. |
-| `BG` | empty | Background of each segment, shown as separate pills: a 256-colour index (`236`) or `R;G;B` (`40;44;52`). |
+| `BG` | empty | Background of each segment, shown as separate pills: a 256-colour index (`236`), `R;G;B` (`40;44;52`) or `#rrggbb`. |
+| `COLOR_LABEL`, `COLOR_MUTED` | `4`, `8` | Segment names (`5h`, `Ctx`, …), and the arrow, reset sign and separator. |
+| `COLOR_GREEN`, `COLOR_YELLOW`, `COLOR_RED` | `2`, `3`, `1` | On track, warning, runs out. Each colour is a 256-colour index (0-15 are the terminal's own palette), `R;G;B` or `#rrggbb` (e.g. `COLOR_RED="#b44141"`), or empty for the default text colour. |
 
 Set `USAGE_RUNWAY_HOME` to keep settings and state somewhere other than
 `~/.claude/usage-runway`.

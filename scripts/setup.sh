@@ -10,7 +10,9 @@
 #   setup.sh --set KEY=VALUE...      write settings to the user config
 #                                    (WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX,
 #                                    SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN,
-#                                    SYM_FULL, SYM_WAIT, SEP, BG)
+#                                    SYM_FULL, SYM_WAIT, SEP, BG, COLOR_LABEL,
+#                                    COLOR_MUTED, COLOR_RED, COLOR_YELLOW,
+#                                    COLOR_GREEN)
 #
 # Exit codes: 0 ok, 1 error, 3 another status line is configured.
 set -u
@@ -80,6 +82,8 @@ case $mode in
     if [ -n "${SEP+x}" ]; then echo "separator:   SEP=\"$SEP\""
     else echo "separator:   SEP unset (\" $SYM_SEP \")"; fi
     echo "background:  BG=\"$BG\""
+    echo "colours:     COLOR_LABEL=\"$COLOR_LABEL\" COLOR_MUTED=\"$COLOR_MUTED\""
+    echo "             COLOR_GREEN=\"$COLOR_GREEN\" COLOR_YELLOW=\"$COLOR_YELLOW\" COLOR_RED=\"$COLOR_RED\""
     awk_name=$(time_awk)
     echo "time awk:    ${awk_name:-<none: weekly forecast uses wall-clock time>}"
     ;;
@@ -119,8 +123,10 @@ case $mode in
         SEP)
           [[ $v =~ $sep_re ]] || { echo "SEP: 0-32 bytes, spaces included, without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
         BG)
-          bg_valid "$v" || { echo "BG: empty, a colour index 0-255 or R;G;B (each 0-255), got: $v" >&2; exit 1; } ;;
-        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, BG)" >&2; exit 1 ;;
+          color_valid "$v" || { echo "BG: empty, a colour index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
+        COLOR_LABEL|COLOR_MUTED|COLOR_RED|COLOR_YELLOW|COLOR_GREEN)
+          color_valid "$v" || { echo "$k: empty, a colour index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
+        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, BG, COLOR_LABEL, COLOR_MUTED, COLOR_RED, COLOR_YELLOW, COLOR_GREEN)" >&2; exit 1 ;;
       esac
     done
     (( ds < de )) || { echo "DAY_START ($ds) must be before DAY_END ($de)" >&2; exit 1; }

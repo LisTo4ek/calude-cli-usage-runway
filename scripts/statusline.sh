@@ -25,14 +25,22 @@ IFS=$'\t' read -r sid ctx cost h5u h5r d7u d7r < <(jq -r '[
   (.rate_limits.seven_day.resets_at // "-")
 ] | @tsv' <<<"$in")
 
-K=$'\e[90m'; B=$'\e[34m'; R=$'\e[31m'; Y=$'\e[33m'; G=$'\e[32m'; D=$'\e[2m'; N=$'\e[0m'
+# Colours from the config: empty means the terminal's default text colour, an
+# invalid value falls back to the built-in default.
+fg_color() {  # fg_color <value> <fallback escape>
+  if ! color_valid "$1"; then printf '%s' "$2"
+  elif [ -n "$1" ]; then color_code "$1" 38; fi
+}
+K=$(fg_color "$COLOR_MUTED" $'\e[90m'); B=$(fg_color "$COLOR_LABEL" $'\e[34m')
+R=$(fg_color "$COLOR_RED" $'\e[31m'); Y=$(fg_color "$COLOR_YELLOW" $'\e[33m'); G=$(fg_color "$COLOR_GREEN" $'\e[32m')
+D=$'\e[2m'; N=$'\e[0m'
 
 # Optional background: each segment becomes a padded pill, the separators
 # between them stay on the terminal background. Resets inside a segment
 # re-apply it so the colour holds across the segment.
 BGS=""
-if bg_valid "$BG" && [ -n "$BG" ]; then
-  case $BG in *\;*) BGS=$'\e[48;2;'"$BG"'m' ;; *) BGS=$'\e[48;5;'"$BG"'m' ;; esac
+if color_valid "$BG" && [ -n "$BG" ]; then
+  BGS=$(color_code "$BG" 48)
   N=$'\e[0m'"$BGS"
 fi
 
