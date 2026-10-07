@@ -74,8 +74,8 @@ current line followed by the list of signs or colors the menu asks about.
 - **Signs, separator, prefix, background:** the `--preview` line with that
   option's settings. A background shows only as the padding around segments.
   `SYM_WARN`, `SYM_FULL` and `SYM_WAIT` do not appear on the sample line; write
-  the `5h` segment in that state yourself, e.g. `5h 90.0% → 120.0% ⚠ 00:40 ↻
-  02:00 (16:42)`, `5h 100% ⛔ ↻ 02:00 (16:42)` or `5h 2.0% → … ↻ 04:50 (19:32)`.
+  the `5h` segment in that state yourself, e.g. `5h 90% → 120% ⚠ 00:40 ↻
+  02:00 (16:42)`, `5h 100% ⛔ ↻ 02:00 (16:42)` or `5h 2% → … ↻ 04:50 (19:32)`.
 - **Colors:** previews are plain text and cannot show color. Show the
   current line, then one line per color the option sets, naming the part it
   colors and its hex value, e.g. `red   #d75f5f  runs out before reset, Cmd
@@ -130,7 +130,7 @@ through the 256 colors, `[` `]` jump a palette row, `{` `}` step by 6, `t`
 type a value, `e` empty (main color; for COLOR_TEXT the terminal default), `d` dim, `u` undo, Enter saves, `q` quits
 without saving. Saved colors reach the status line on its next refresh.
 For the other sign sets and the prefixes, show an example line such as
-`5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
+`5h 20% → 33% ↻ 02:00 (16:42) · 7d 30%`.
 
 ### Sign menus
 
@@ -140,8 +140,8 @@ then menu B as one call with three. All are single-select, and like the main
 menu each option has a preview. Mark the option that matches the current value
 with " (current)"; if the current value matches no option, replace the third
 option with "Keep current: <value>". Give each option a `description` with an
-example line using that sign, such as `5h 20.0% -> 33.3% ↻ 02:00 (16:42) · 7d
-30.0%`.
+example line using that sign, such as `5h 20% -> 33% ↻ 02:00 (16:42) · 7d
+30%`.
 
 Give each sign question exactly three options. AskUserQuestion adds "Other"
 as the fourth option. Do not add a "Type my own" option. Use the typed text as
@@ -160,7 +160,7 @@ the value; if Other comes without one, ask for it as described under Previews.
 The option label is the setting value, so "->" in Arrow becomes
 `SYM_ARROW="->"`, and "\" / \"" in Ses sep becomes `SES_SEP=" / "` (the quotes
 show the spaces; save the text between them). Preview the Ses sep options
-with a sample such as `Ses 38.0% / 60.0% / 4.0%`; `--preview` shows only one
+with a sample such as `Ses 4% / 60% / 38%`; `--preview` shows only one
 window. Mark no option "(Recommended)"; label the default option
 "→ (default)" and so on, and drop " (default)" from the saved value.
 
@@ -242,7 +242,8 @@ Convert "Other" answers the same way. "Mon, Wed, Fri" becomes
 or "sessions separator /" becomes `SES_SEP=" / "` (add a space on each side
 unless the user gives the spacing), "only spaces between
 the segments" becomes `SEP="   "`, and "bg 40,44,52" or
-"background 40 44 52" becomes `BG="40;44;52"`, and "red #b44141" becomes
+"background 40 44 52" becomes `BG="40;44;52"`, "no decimals" becomes
+`PCT_DECIMALS=0` and "one decimal" `PCT_DECIMALS=1`, and "red #b44141" becomes
 `COLOR_RED="#b44141"` (the names text, prefix, labels, muted, separator,
 faint, green, yellow and red map to `COLOR_TEXT`, `COLOR_PREFIX`,
 `COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP`, `COLOR_FAINT`, `COLOR_GREEN`,

@@ -5,7 +5,7 @@ have used, where your current pace will take you by the time each limit resets,
 and how much of it the current session and message are using.
 
 ```
-5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0% → 52.0% ↻ 4d0h (Mon 13:00) · Ctx 12.3% · Ses 4.0% · Cmd 1.0%
+5h 20% → 33% ↻ 02:00 (16:42) · 7d 30% → 52% ↻ 4d0h (Mon 13:00) · Ctx 12% · Cmd 1% · Ses 4%
 ```
 
 It warns once when a limit is on track to run out early, and can optionally stop
@@ -82,16 +82,16 @@ the other settings below are changed in the config file.
 
 | Part | Meaning |
 |---|---|
-| `5h 20.0%` | Share of the 5-hour limit used, across your whole account (all sessions, claude.ai, the desktop app). |
-| `→ 33.3%` | Projected usage when the limit resets, at your current pace. It can exceed 100%. |
+| `5h 20%` | Share of the 5-hour limit used, across your whole account (all sessions, claude.ai, the desktop app). |
+| `→ 33%` | Projected usage when the limit resets, at your current pace. It can exceed 100%. |
 | `⚠ 00:40` | Shown in red when the projection passes 100%: time until the limit runs out. |
 | `100% ⛔` | Limit used up. |
 | `→ …` | Not enough data yet for a forecast. |
 | `↻ 02:00 (16:42)` | Time until reset, and the reset time (24h; weekday prefix when not today). |
 | `7d …` | The same for the weekly limit. |
-| `Ctx 12.3%` | How full this session's context window is. |
-| `Ses 4.0%` | 5-hour-limit usage by this session since it started or since `/clear`. After a 5-hour reset it shows one value for each of the last 3 windows, oldest first and the current one last (`Ses 38.0% \| 60.0% \| 4.0%`). Earlier windows in which the session used nothing are left out; the current one shows `…` until the session uses it. |
-| `Cmd 1.0%` | 5-hour-limit usage by your last message, including all tools, skills and subagents it ran. |
+| `Ctx 12%` | How full this session's context window is. |
+| `Cmd 1%` | 5-hour-limit usage by your last message, including all tools, skills and subagents it ran. |
+| `Ses 4%` | 5-hour-limit usage by this session since it started or since `/clear`. After a 5-hour reset it shows one value for each of the last 3 windows, newest first: the current one, then the earlier ones (`Ses 4% \| 60% \| 38%`). Earlier windows in which the session used nothing are left out; the current one shows `…` until the session uses it. |
 | `Usage runway: starting...` | No limit data yet: shown until the first response. |
 
 Colors: green is on track, yellow means the limit is projected above
@@ -130,7 +130,7 @@ Not counted in `Ses`/`Cmd` (but counted in `5h`): other sessions, headless
 When a limit first turns yellow or red, each session shows a one-time message,
 for example:
 
-> ⚠ 5h limit: 45.0% used, at this pace it runs out in 00:40, resets in 02:00. Press Esc to stop the current task.
+> ⚠ 5h limit: 45% used, at this pace it runs out in 00:40, resets in 02:00. Press Esc to stop the current task.
 
 It also sends a desktop notification (`notify-send` on Linux, `osascript` on
 macOS) and rings the terminal bell.
@@ -153,6 +153,7 @@ there, commented out). Changes apply on the next refresh.
 | `WORK_DAYS` | `"1 2 3 4 5 6 7"` | Working days for the weekly forecast, 1 = Monday. |
 | `DAY_START`, `DAY_END` | `0`, `24` | Working hours for the weekly forecast, local time. |
 | `NIGHT_WEIGHT`, `OFF_DAY_WEIGHT` | `0.1`, `0.1` | Weight of off hours and off days; `1` disables weighting. |
+| `PCT_DECIMALS` | `0` | Decimals in the shown percentages: `0` (`20%`) or `1` (`20.0%`). |
 | `CMD_WARN`, `CMD_CRIT` | `3`, `5` | `Cmd` thresholds, %. |
 | `GUARD`, `GUARD_PCT` | `off`, `95` | Auto-stop guard. |
 | `NOTIFY`, `BELL` | `on`, `on` | Desktop notification and terminal bell for alerts. |

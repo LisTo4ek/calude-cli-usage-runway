@@ -38,6 +38,10 @@ K=$(fg_color "$COLOR_MUTED" '#808080'); B=$(fg_color "$COLOR_LABEL" '#5f87d7')
 R=$(fg_color "$COLOR_RED" '#d75f5f'); Y=$(fg_color "$COLOR_YELLOW" '#d7af5f'); G=$(fg_color "$COLOR_GREEN" '#5faf5f')
 D=$(fg_color "$COLOR_FAINT" '#8a8a8a'); SC=$(fg_color "$COLOR_SEP" '#6c6c6c')
 T=$(fg_color "$COLOR_TEXT" ''); PC=$(fg_color "$COLOR_PREFIX" '')
+
+# Shown percentages have PCT_DECIMALS decimals (0 or 1); state keeps one.
+case ${PCT_DECIMALS:-0} in 1) PCT_FMT=%.1f ;; *) PCT_FMT=%.0f ;; esac
+pct() { printf "$PCT_FMT" "$1"; }
 # The prefix and separator sit outside the panels, so they need it explicitly.
 SC=${SC:-$T} PC=${PC:-$T}
 N=$'\e[0m'"$T"
@@ -149,7 +153,7 @@ forecast() {
     mindata=$MIN_DATA_7D
     [ -n "$TAWK" ] && weighted=1
   fi
-  read -r proj eta projd < <("$FAWK" -v now="$now" -v u="$u" -v r="$r0" -v len="$len" \
+  read -r proj eta projd < <("$FAWK" -v pf="$PCT_FMT" -v now="$now" -v u="$u" -v r="$r0" -v len="$len" \
       -v lb="$lb" -v span="$MIN_SPAN" -v weighted="$weighted" -v ww="$OFF_DAY_WEIGHT" -v wd="$WORK_DAYS" \
       -v mindata="$mindata" -v nw="$NIGHT_WEIGHT" -v ds="$DAY_START" -v de="$DAY_END" "$TIME_FUNCS"'
     # Weighted seconds between a and b.
@@ -177,13 +181,13 @@ forecast() {
       else { print "- -1 -"; exit }
       proj=u+rate*W(now, r)
       eta=(rate>0) ? until_w(now, (100-u)/rate) : -1
-      printf "%.0f %d %.1f\n", proj, eta, proj
+      printf "%.0f %d " pf "\n", proj, eta, proj
     }' "$f")
 
   local left=$(( r0 - now )) level color seg upct upd reset
   (( left < 0 )) && left=0
   upct=$(printf '%.0f' "$u")
-  upd=$(printf '%.1f' "$u")
+  upd=$(pct "$u")
   reset="${K}${SYM_RESET}${N} ${D}$(fmt_dur "$left") ($(fmt_clock "$r0"))${N}"
   if (( upct >= 100 )) || { (( eta >= 0 )) && (( eta < left )); }; then
     level=crit; color=$R
@@ -245,14 +249,15 @@ session_total() {
   find "$UR_STATE" -maxdepth 1 \( -name 'acc-*' -o -name 'turn-*' -o -name 'seen-*' -o -name 'obs-*' \) \
     -mtime +7 -delete 2>/dev/null
   SESS_TOTAL=$total
-  # One value per 5h window for the last 3 windows, oldest first, the current
-  # one last ("…" while this session has not used the current window).
-  SESS_SEG="${cur}%"
+  # One value per 5h window for the last 3 windows, newest first: the current
+  # one ("…" while this session has not used it), then the earlier ones.
+  SESS_SEG="$(pct "$cur")%"
   if [ "$prev" != "-" ]; then
     # The separator goes in through ENVIRON: awk -v would expand backslashes.
-    SESS_SEG=$(UR_SES_SEP="${K}${SES_SEP}${N}" awk -v p="$prev" -v w="$cur" 'BEGIN {
-      n = split(p, a, ","); s = (w > 0) ? w "%" : "…"
-      for (i = n; i > n - 2 && i > 0; i--) s = a[i] "%" ENVIRON["UR_SES_SEP"] s
+    SESS_SEG=$(UR_SES_SEP="${K}${SES_SEP}${N}" PCT_FMT=$PCT_FMT awk -v p="$prev" -v w="$cur" 'BEGIN {
+      f = ENVIRON["PCT_FMT"] "%%"
+      n = split(p, a, ","); s = (w > 0) ? sprintf(f, w) : "…"
+      for (i = n; i > n - 2 && i > 0; i--) s = s ENVIRON["UR_SES_SEP"] sprintf(f, a[i])
       print s }')
   fi
 }
@@ -266,21 +271,22 @@ turn_delta() {
   d=$(awk -v t="$SESS_TOTAL" -v s="$start" 'BEGIN { d = t - s; if (d < 0) d = 0; printf "%.1f", d }')
   if awk -v d="$d" -v c="$CMD_CRIT" 'BEGIN { exit !(d >= c) }'; then color=$R
   elif awk -v d="$d" -v w="$CMD_WARN" 'BEGIN { exit !(d >= w) }'; then color=$Y; fi
-  TURN_SEG="${color}${d}%${N}"
+  TURN_SEG="${color}$(pct "$d")%${N}"
 }
 
 SEGS=()
 forecast five_hour 5h 18000 "$LOOKBACK_5H" "$h5u" "$h5r"
 forecast seven_day 7d 604800 "$LOOKBACK_7D" "$d7u" "$d7r"
 
-[ "$ctx" != "-" ] && SEGS+=("${B}Ctx${N} $(printf '%.1f' "$ctx")%")
+[ "$ctx" != "-" ] && SEGS+=("${B}Ctx${N} $(pct "$ctx")%")
 
 TURN_SEG=""; SESS_TOTAL=""; SESS_SEG=""
 session_total
 turn_delta
 if [ -n "$SESS_TOTAL" ]; then
-  SEGS+=("${B}Ses${N} ${SESS_SEG}")
+  # Ses goes last: it grows to one value per 5h window.
   [ -n "$TURN_SEG" ] && SEGS+=("${B}Cmd${N} ${TURN_SEG}")
+  SEGS+=("${B}Ses${N} ${SESS_SEG}")
 fi
 
 # No limit data from this session or a recent one: first render, or an API-key

@@ -10,7 +10,8 @@ fresh() {  # new isolated environment
   T=$(mktemp -d)
   export USAGE_RUNWAY_HOME="$T/ur" CLAUDE_CONFIG_DIR="$T/claude"
   mkdir -p "$USAGE_RUNWAY_HOME/state" "$CLAUDE_CONFIG_DIR"
-  printf 'NOTIFY=off\nBELL=off\n' > "$USAGE_RUNWAY_HOME/config"
+  # One decimal keeps the forecast checks precise; PCT_DECIMALS=0 has its own tests.
+  printf 'NOTIFY=off\nBELL=off\nPCT_DECIMALS=1\n' > "$USAGE_RUNWAY_HOME/config"
   NOW=$(date +%s)
 }
 conf() { echo "$1" >> "$USAGE_RUNWAY_HOME/config"; }
@@ -65,6 +66,10 @@ out=$(input A 1 20 7200 | line)
 check "5h: used, projection, reset" "$out" '5h 20.0% → 33.3% ↻ 0'
 check "Ses starts at zero" "$out" 'Ses 0.0%'
 check_not "no cost with limit data" "$out" '$'
+sed -i.bak '/^PCT_DECIMALS=/d' "$USAGE_RUNWAY_HOME/config"
+out=$(input A 1 20 7200 | line)
+check "whole percentages by default" "$out" '5h 20% → 33% ↻ 0'
+check "whole percentages by default: Ctx, Ses" "$out" 'Ctx 12% · Ses 0%'
 
 fresh
 sample five_hour 7200 600 20
@@ -104,29 +109,33 @@ hook A UserPromptSubmit >/dev/null
 out=$(input A 3 33 3000 | line)
 check "Cmd restarts per message" "$out" 'Cmd 3.0%'
 out=$(input A 4 2 21000 | line)
-check "Ses splits by 5h window, oldest first" "$out" 'Ses 7.0% | 2.0%'
+check "Ses splits by 5h window, newest first" "$out" 'Ses 2.0% | 7.0%'
 check "Cmd spans a 5h reset" "$out" 'Cmd 5.0%'
 out=$(input A 5 6 21000 | line)
-check "Ses grows the current window" "$out" 'Ses 7.0% | 6.0%'
+check "Ses grows the current window" "$out" 'Ses 6.0% | 7.0%'
 out=$(input A 5 0 39000 | line)
-check "Ses: unused current window shows …" "$out" 'Ses 7.0% | 6.0% | …'
+check "Ses: unused current window shows …" "$out" 'Ses … | 6.0% | 7.0%'
 out=$(input A 5 0 57000 | line)
-check "Ses drops a window with no usage" "$out" 'Ses 7.0% | 6.0% | …'
+check "Ses drops a window with no usage" "$out" 'Ses … | 6.0% | 7.0%'
 check_not "Ses: one entry per used window" "$out" '| 0.0%'
 out=$(input A 6 3 57000 | line)
-check "Ses: current window value once used" "$out" 'Ses 7.0% | 6.0% | 3.0%'
+check "Ses: current window value once used" "$out" 'Ses 3.0% | 6.0% | 7.0%'
 raw=$(input A 6 3 57000 | bash "$SL")
-check "Ses separator in COLOR_MUTED" "$raw" $'6.0%\e[38;2;128;128;128m | \e[0m3.0%'
+check "Ses separator in COLOR_MUTED" "$raw" $'3.0%\e[38;2;128;128;128m | \e[0m6.0%'
 conf 'SES_SEP=" / "'
 out=$(input A 6 3 57000 | line)
-check "SES_SEP sets the Ses separator" "$out" 'Ses 7.0% / 6.0% / 3.0%'
+check "SES_SEP sets the Ses separator" "$out" 'Ses 3.0% / 6.0% / 7.0%'
 conf 'SES_SEP="\\"'
 out=$(input A 6 3 57000 | line)
-check "SES_SEP is taken literally" "$out" 'Ses 7.0%\6.0%\3.0%'
+check "SES_SEP is taken literally" "$out" 'Ses 3.0%\6.0%\7.0%'
 conf 'SES_SEP=" | "'
 out=$(input A 6 0 75000 | line)
-check "Ses shows the last 3 windows" "$out" 'Ses 6.0% | 3.0% | …'
+check "Ses shows the last 3 windows" "$out" 'Ses … | 3.0% | 6.0%'
 check_not "Ses drops older windows" "$out" '7.0%'
+conf 'PCT_DECIMALS=0'
+hook A UserPromptSubmit >/dev/null
+out=$(input A 7 2 75000 | line)
+check "PCT_DECIMALS=0: Cmd, then Ses last" "$out" 'Cmd 2% · Ses 2% | 3% | 6%'
 
 fresh
 echo "$((NOW + 3000)) 20 1 12.0" > "$USAGE_RUNWAY_HOME/state/acc-A"
@@ -403,6 +412,10 @@ for bad in '256' '1;2' 'red' '1;2;300' '$(touch x)' '1;2;3;4'; do
 done
 bash "$SETUP" --set 'BG=' >/dev/null; rc=$?
 check "setup --set clears BG" "$rc" '0'
+bash "$SETUP" --set PCT_DECIMALS=0 >/dev/null
+check "setup --set saves PCT_DECIMALS" "$(cat "$USAGE_RUNWAY_HOME/config")" 'PCT_DECIMALS="0"'
+bash "$SETUP" --set PCT_DECIMALS=2 >/dev/null 2>&1; rc=$?
+check "setup --set rejects bad PCT_DECIMALS" "$rc" '1'
 
 echo
 echo "$pass passed, $fail failed"

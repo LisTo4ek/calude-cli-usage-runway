@@ -30,6 +30,9 @@ DAY_END=24
 NIGHT_WEIGHT=0.1
 OFF_DAY_WEIGHT=0.1
 
+# Decimals in the shown percentages: 0 (20%) or 1 (20.0%).
+PCT_DECIMALS=0
+
 # Cmd (usage of the current message) turns yellow / red at these 5h %.
 CMD_WARN=3
 CMD_CRIT=5

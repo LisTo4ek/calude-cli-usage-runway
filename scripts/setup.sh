@@ -12,7 +12,8 @@
 #   setup.sh --set KEY=VALUE...      write settings to the user config
 #                                    (WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX,
 #                                    SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN,
-#                                    SYM_FULL, SYM_WAIT, SEP, SES_SEP, BG,
+#                                    SYM_FULL, SYM_WAIT, SEP, SES_SEP,
+#                                    PCT_DECIMALS, BG,
 #                                    COLOR_TEXT,
 #                                    COLOR_PREFIX, COLOR_LABEL, COLOR_MUTED,
 #                                    COLOR_SEP, COLOR_FAINT, COLOR_GREEN,
@@ -129,11 +130,13 @@ case $mode in
           [[ $v =~ $sym_re ]] || { echo "$k: 1-16 bytes (a Unicode symbol is 2-4) without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
         SEP|SES_SEP)
           [[ $v =~ $sep_re ]] || { echo "$k: 0-32 bytes, spaces included, without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
+        PCT_DECIMALS)
+          [[ $v =~ ^[01]$ ]] || { echo "PCT_DECIMALS: 0 or 1, got: $v" >&2; exit 1; } ;;
         BG)
           [ "$v" != dim ] && color_valid "$v" || { echo "BG: empty, a color index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
         COLOR_TEXT|COLOR_PREFIX|COLOR_LABEL|COLOR_MUTED|COLOR_SEP|COLOR_FAINT|COLOR_RED|COLOR_YELLOW|COLOR_GREEN)
           color_valid "$v" || { echo "$k: empty, a color index 0-255, R;G;B (each 0-255), #rrggbb or dim, got: $v" >&2; exit 1; } ;;
-        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, SES_SEP, BG, COLOR_*)" >&2; exit 1 ;;
+        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, SES_SEP, PCT_DECIMALS, BG, COLOR_*)" >&2; exit 1 ;;
       esac
     done
     (( ds < de )) || { echo "DAY_START ($ds) must be before DAY_END ($de)" >&2; exit 1; }
