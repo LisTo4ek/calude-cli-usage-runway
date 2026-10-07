@@ -115,6 +115,15 @@ check "Ses drops a window with no usage" "$out" 'Ses 7.0% | 6.0% | …'
 check_not "Ses: one entry per used window" "$out" '| 0.0%'
 out=$(input A 6 3 57000 | line)
 check "Ses: current window value once used" "$out" 'Ses 7.0% | 6.0% | 3.0%'
+raw=$(input A 6 3 57000 | bash "$SL")
+check "Ses separator in COLOR_MUTED" "$raw" $'6.0%\e[38;2;128;128;128m | \e[0m3.0%'
+conf 'SES_SEP=" / "'
+out=$(input A 6 3 57000 | line)
+check "SES_SEP sets the Ses separator" "$out" 'Ses 7.0% / 6.0% / 3.0%'
+conf 'SES_SEP="\\"'
+out=$(input A 6 3 57000 | line)
+check "SES_SEP is taken literally" "$out" 'Ses 7.0%\6.0%\3.0%'
+conf 'SES_SEP=" | "'
 out=$(input A 6 0 75000 | line)
 check "Ses shows the last 3 windows" "$out" 'Ses 6.0% | 3.0% | …'
 check_not "Ses drops older windows" "$out" '7.0%'
@@ -266,6 +275,9 @@ for bad in 'a$(touch x)' ' " ' '123456789012345678901234567890123'; do
 done
 fresh
 check "setup --status: SEP unset" "$(bash "$SETUP" --status)" 'SEP unset (" · ")'
+bash "$SETUP" --set 'SES_SEP= · ' >/dev/null; rc=$?
+check "setup --set saves SES_SEP" "$rc" '0'
+check "setup --status shows SES_SEP" "$(bash "$SETUP" --status)" 'SES_SEP=" · "'
 
 fresh
 raw=$(input A 1 20 7200 | bash "$SL")

@@ -12,7 +12,8 @@
 #   setup.sh --set KEY=VALUE...      write settings to the user config
 #                                    (WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX,
 #                                    SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN,
-#                                    SYM_FULL, SYM_WAIT, SEP, BG, COLOR_TEXT,
+#                                    SYM_FULL, SYM_WAIT, SEP, SES_SEP, BG,
+#                                    COLOR_TEXT,
 #                                    COLOR_PREFIX, COLOR_LABEL, COLOR_MUTED,
 #                                    COLOR_SEP, COLOR_FAINT, COLOR_GREEN,
 #                                    COLOR_YELLOW, COLOR_RED)
@@ -85,6 +86,7 @@ case $mode in
     echo "             SYM_WARN=\"$SYM_WARN\" SYM_FULL=\"$SYM_FULL\" SYM_WAIT=\"$SYM_WAIT\""
     if [ -n "${SEP+x}" ]; then echo "separator:   SEP=\"$SEP\""
     else echo "separator:   SEP unset (\" $SYM_SEP \")"; fi
+    echo "Ses windows: SES_SEP=\"$SES_SEP\""
     echo "background:  BG=\"$BG\""
     echo "colors:      COLOR_TEXT=\"$COLOR_TEXT\" COLOR_PREFIX=\"$COLOR_PREFIX\" COLOR_LABEL=\"$COLOR_LABEL\""
     echo "             COLOR_MUTED=\"$COLOR_MUTED\" COLOR_SEP=\"$COLOR_SEP\" COLOR_FAINT=\"$COLOR_FAINT\""
@@ -125,13 +127,13 @@ case $mode in
           [[ $v =~ $prefix_re ]] || { echo "SYM_PREFIX: text without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
         SYM_ARROW|SYM_RESET|SYM_SEP|SYM_WARN|SYM_FULL|SYM_WAIT)
           [[ $v =~ $sym_re ]] || { echo "$k: 1-16 bytes (a Unicode symbol is 2-4) without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
-        SEP)
-          [[ $v =~ $sep_re ]] || { echo "SEP: 0-32 bytes, spaces included, without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
+        SEP|SES_SEP)
+          [[ $v =~ $sep_re ]] || { echo "$k: 0-32 bytes, spaces included, without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
         BG)
           [ "$v" != dim ] && color_valid "$v" || { echo "BG: empty, a color index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
         COLOR_TEXT|COLOR_PREFIX|COLOR_LABEL|COLOR_MUTED|COLOR_SEP|COLOR_FAINT|COLOR_RED|COLOR_YELLOW|COLOR_GREEN)
           color_valid "$v" || { echo "$k: empty, a color index 0-255, R;G;B (each 0-255), #rrggbb or dim, got: $v" >&2; exit 1; } ;;
-        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, BG, COLOR_*)" >&2; exit 1 ;;
+        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, SES_SEP, BG, COLOR_*)" >&2; exit 1 ;;
       esac
     done
     (( ds < de )) || { echo "DAY_START ($ds) must be before DAY_END ($de)" >&2; exit 1; }

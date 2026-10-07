@@ -158,11 +158,12 @@ there, commented out). Changes apply on the next refresh.
 | `SYM_PREFIX` | empty | Text printed before the status line, e.g. to tell several setups apart. |
 | `SYM_ARROW`, `SYM_RESET`, `SYM_SEP` | `→`, `↻`, `·` | Projection arrow, reset marker and segment separator. |
 | `SEP` | unset | The whole text between segments, spaces included, e.g. `"   "` for spaces only or `" \| "`. Unset means `SYM_SEP` with a space on each side. |
+| `SES_SEP` | `" \| "` | Text between the 5-hour windows in `Ses`, spaces included. Shown in `COLOR_MUTED`. |
 | `SYM_WARN`, `SYM_FULL`, `SYM_WAIT` | `⚠`, `⛔`, `…` | Hits 100% before reset (also on alerts), limit reached, no forecast yet. |
 | `BG` | empty | Background of each segment, shown as separate pills, e.g. `#303030`. |
 | `COLOR_TEXT` | empty | Main color of every panel, also used for the `Ctx`, `Ses` and `Cmd` values. Empty is the terminal's default text color. |
 | `COLOR_PREFIX` | empty | The prefix. |
-| `COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP` | `#5f87d7`, `#808080`, `#6c6c6c` | Segment names (`5h`, `Ctx`, …), the arrow and reset sign, and the separator. |
+| `COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP` | `#5f87d7`, `#808080`, `#6c6c6c` | Segment names (`5h`, `Ctx`, …), the arrow, reset sign and `Ses` window separator, and the separator between segments. |
 | `COLOR_FAINT` | `#8a8a8a` | Time until reset, and usage before a forecast exists. |
 | `COLOR_GREEN`, `COLOR_YELLOW`, `COLOR_RED` | `#5faf5f`, `#d7af5f`, `#d75f5f` | On track, warning, runs out. |
 

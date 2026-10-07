@@ -249,9 +249,10 @@ session_total() {
   # one last ("…" while this session has not used the current window).
   SESS_SEG="${cur}%"
   if [ "$prev" != "-" ]; then
-    SESS_SEG=$(awk -v p="$prev" -v w="$cur" 'BEGIN {
+    # The separator goes in through ENVIRON: awk -v would expand backslashes.
+    SESS_SEG=$(UR_SES_SEP="${K}${SES_SEP}${N}" awk -v p="$prev" -v w="$cur" 'BEGIN {
       n = split(p, a, ","); s = (w > 0) ? w "%" : "…"
-      for (i = n; i > n - 2 && i > 0; i--) s = a[i] "% | " s
+      for (i = n; i > n - 2 && i > 0; i--) s = a[i] "%" ENVIRON["UR_SES_SEP"] s
       print s }')
   fi
 }

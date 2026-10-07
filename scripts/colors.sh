@@ -17,7 +17,7 @@ fi
 command -v jq >/dev/null 2>&1 || { echo "usage-runway needs jq" >&2; exit 1; }
 
 KEYS=(BG COLOR_TEXT COLOR_LABEL COLOR_MUTED COLOR_SEP COLOR_FAINT COLOR_GREEN COLOR_YELLOW COLOR_RED COLOR_PREFIX)
-DESC=("segment background" "main color of every panel" "segment names: 5h, 7d, Ctx" "arrow and reset sign"
+DESC=("segment background" "main color of every panel" "segment names: 5h, 7d, Ctx" "arrow, reset sign, Ses separator"
       "separator" "time until reset" "on track" "warning, Cmd at CMD_WARN" "runs out, Cmd at CMD_CRIT"
       "prefix text")
 VALS=() ORIG=()

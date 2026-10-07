@@ -59,6 +59,10 @@ SYM_WAIT="…"
 # only or SEP=" | ". When unset it is SYM_SEP with a space on each side.
 # SEP=" · "
 
+# Text between the 5-hour windows in Ses, spaces included. Shown in
+# COLOR_MUTED.
+SES_SEP=" | "
+
 # Background of the status line: empty for none, or a color as below (e.g.
 # #303030). When set, each segment is shown as a pill padded with a space on
 # each side; separators keep the terminal background.
@@ -73,7 +77,7 @@ BG=""
 COLOR_TEXT=""           # main color: Ctx %, Ses %, Cmd % below CMD_WARN
 COLOR_PREFIX=""         # SYM_PREFIX
 COLOR_LABEL="#5f87d7"   # segment names: 5h, 7d, Ctx, Ses, Cmd
-COLOR_MUTED="#808080"   # arrow and reset sign
+COLOR_MUTED="#808080"   # arrow, reset sign and SES_SEP
 COLOR_SEP="#6c6c6c"     # separator between segments
 COLOR_FAINT="#8a8a8a"   # time until reset, usage before a forecast exists
 COLOR_GREEN="#5faf5f"   # on track
