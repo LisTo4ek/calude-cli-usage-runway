@@ -25,8 +25,9 @@ to `~/.claude/settings.json`. It keeps a backup at
 without asking. The status line appears within about 10 seconds. Setup
 then shows one menu with your working days and hours (default: every day, all
 day), the symbols (for example plain ASCII if your font lacks them), the
-prefix and the segment background. Choose "Pick each sign" to set every sign on its own, or pick Other
-in any question to type your own value. Run
+prefix, the segment background and the colours. Choose "Pick each sign" or
+"Pick each colour" to set each one on its own, or pick Other in any question
+to type your own value. Run
 `/usage-runway:setup` again at any time to change them.
 
 ### Setup commands
@@ -43,13 +44,20 @@ Name the change after `/usage-runway:setup` to skip the menu:
 | `/usage-runway:setup 9 to 18` | Working hours, whole hours from 0 to 24, such as `7-15`. |
 | `/usage-runway:setup arrow ->` | Projection arrow: `→` (default), `->`, `»` or your own. |
 | `/usage-runway:setup reset @` | Reset marker: `↻` (default), `⟳`, `@` or your own. |
-| `/usage-runway:setup sep \|` | Separator: `·` (default), `\|`, `•` or your own. |
+| `/usage-runway:setup sep \|` | Separator: `·` (default), `\|`, spaces only or your own, spaces included. |
 | `/usage-runway:setup warn !` | Runs out before reset: `⚠` (default), `!`, `‼` or your own. |
 | `/usage-runway:setup full FULL` | Limit reached: `⛔` (default), `✖`, `FULL` or your own. |
 | `/usage-runway:setup wait ...` | No forecast yet: `…` (default), `...`, `?` or your own. |
 | `/usage-runway:setup plain ASCII` | All six signs at once: `Unicode defaults` or `plain ASCII`. |
 | `/usage-runway:setup prefix [home]` | Text before the status line: none, `[work]`, `[home]` or your own. |
-| `/usage-runway:setup bg 236` | Segment background, each segment as a pill: none, a colour index `0`–`255` or `R;G;B` such as `40;44;52`. |
+| `/usage-runway:setup bg #303030` | Segment background, each segment as a pill: none or a colour. |
+| `/usage-runway:setup red d75f5f` | One colour: `text`, `prefix`, `labels`, `muted`, `separator`, `faint`, `green`, `yellow` or `red`. |
+| `/usage-runway:setup colours defaults` | All colours at once: `defaults` or `terminal colours` (follow the terminal theme). |
+| `/usage-runway:setup colours` | Choose colours from the menu, or get the command for the interactive colour picker. |
+
+A colour is `#rrggbb`, `rrggbb`, `R;G;B` or a 256-colour index; setup saves it
+as `#rrggbb`. Indexes 0–15 stay numbers: they are the terminal's own palette
+and follow its theme.
 
 Combine several in one command, e.g. `/usage-runway:setup arrow >> sep /`.
 Name a setting without a value, e.g. `/usage-runway:setup prefix`, to get a
@@ -152,8 +160,20 @@ there, commented out). Changes apply on the next refresh.
 | `SEP` | unset | The whole text between segments, spaces included, e.g. `"   "` for spaces only or `" \| "`. Unset means `SYM_SEP` with a space on each side. |
 | `SYM_WARN`, `SYM_FULL`, `SYM_WAIT` | `⚠`, `⛔`, `…` | Hits 100% before reset (also on alerts), limit reached, no forecast yet. |
 | `BG` | empty | Background of each segment, shown as separate pills: a 256-colour index (`236`), `R;G;B` (`40;44;52`) or `#rrggbb`. |
-| `COLOR_LABEL`, `COLOR_MUTED` | `4`, `8` | Segment names (`5h`, `Ctx`, …), and the arrow, reset sign and separator. |
-| `COLOR_GREEN`, `COLOR_YELLOW`, `COLOR_RED` | `2`, `3`, `1` | On track, warning, runs out. Each colour is a 256-colour index (0-15 are the terminal's own palette), `R;G;B` or `#rrggbb` (e.g. `COLOR_RED="#b44141"`), or empty for the default text colour. |
+| `COLOR_TEXT`, `COLOR_PREFIX` | empty, empty | Other text (`Ctx`, `Ses`, `Cmd` values) and the prefix. |
+| `COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP` | `4`, `8`, `8` | Segment names (`5h`, `Ctx`, …), the arrow and reset sign, and the separator. |
+| `COLOR_FAINT` | `dim` | Time until reset, and usage before a forecast exists. |
+| `COLOR_GREEN`, `COLOR_YELLOW`, `COLOR_RED` | `2`, `3`, `1` | On track, warning, runs out. |
+
+Each colour is a 256-colour index (0-15 are the terminal's own palette, so
+they follow its theme), `R;G;B`, `#rrggbb` or `rrggbb` (e.g.
+`COLOR_RED="d75f5f"`), `dim`, or empty for the terminal's default text colour.
+To choose them with the arrow keys on a live preview, run the colour picker
+in a terminal:
+
+```
+bash "$(cat ~/.claude/usage-runway/plugin-root)/scripts/colors.sh"
+```
 
 Set `USAGE_RUNWAY_HOME` to keep settings and state somewhere other than
 `~/.claude/usage-runway`.

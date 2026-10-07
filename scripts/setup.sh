@@ -7,12 +7,15 @@
 #   setup.sh --force    install, replacing another status line
 #   setup.sh --status   show what is configured
 #   setup.sh --uninstall [--purge]   remove the status line (--purge: also data)
+#   setup.sh --preview [KEY=VALUE...] print a sample status line (plain text)
+#                                    with the user config plus these settings
 #   setup.sh --set KEY=VALUE...      write settings to the user config
 #                                    (WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX,
 #                                    SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN,
-#                                    SYM_FULL, SYM_WAIT, SEP, BG, COLOR_LABEL,
-#                                    COLOR_MUTED, COLOR_RED, COLOR_YELLOW,
-#                                    COLOR_GREEN)
+#                                    SYM_FULL, SYM_WAIT, SEP, BG, COLOR_TEXT,
+#                                    COLOR_PREFIX, COLOR_LABEL, COLOR_MUTED,
+#                                    COLOR_SEP, COLOR_FAINT, COLOR_GREEN,
+#                                    COLOR_YELLOW, COLOR_RED)
 #
 # Exit codes: 0 ok, 1 error, 3 another status line is configured.
 set -u
@@ -26,7 +29,8 @@ for a in "$@"; do
     --uninstall) mode=uninstall ;;
     --purge) purge=1 ;;
     --set) mode=set ;;
-    [A-Z]*=*) [ "$mode" = set ] || { echo "KEY=VALUE needs --set: $a" >&2; exit 1; }; sets+=("$a") ;;
+    --preview) mode=preview ;;
+    [A-Z]*=*) case $mode in set|preview) sets+=("$a") ;; *) echo "KEY=VALUE needs --set or --preview: $a" >&2; exit 1 ;; esac ;;
     *) echo "unknown option: $a" >&2; exit 1 ;;
   esac
 done
@@ -82,7 +86,8 @@ case $mode in
     if [ -n "${SEP+x}" ]; then echo "separator:   SEP=\"$SEP\""
     else echo "separator:   SEP unset (\" $SYM_SEP \")"; fi
     echo "background:  BG=\"$BG\""
-    echo "colours:     COLOR_LABEL=\"$COLOR_LABEL\" COLOR_MUTED=\"$COLOR_MUTED\""
+    echo "colours:     COLOR_TEXT=\"$COLOR_TEXT\" COLOR_PREFIX=\"$COLOR_PREFIX\" COLOR_LABEL=\"$COLOR_LABEL\""
+    echo "             COLOR_MUTED=\"$COLOR_MUTED\" COLOR_SEP=\"$COLOR_SEP\" COLOR_FAINT=\"$COLOR_FAINT\""
     echo "             COLOR_GREEN=\"$COLOR_GREEN\" COLOR_YELLOW=\"$COLOR_YELLOW\" COLOR_RED=\"$COLOR_RED\""
     awk_name=$(time_awk)
     echo "time awk:    ${awk_name:-<none: weekly forecast uses wall-clock time>}"
@@ -123,20 +128,41 @@ case $mode in
         SEP)
           [[ $v =~ $sep_re ]] || { echo "SEP: 0-32 bytes, spaces included, without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
         BG)
-          color_valid "$v" || { echo "BG: empty, a colour index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
-        COLOR_LABEL|COLOR_MUTED|COLOR_RED|COLOR_YELLOW|COLOR_GREEN)
-          color_valid "$v" || { echo "$k: empty, a colour index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
-        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, BG, COLOR_LABEL, COLOR_MUTED, COLOR_RED, COLOR_YELLOW, COLOR_GREEN)" >&2; exit 1 ;;
+          [ "$v" != dim ] && color_valid "$v" || { echo "BG: empty, a colour index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
+        COLOR_TEXT|COLOR_PREFIX|COLOR_LABEL|COLOR_MUTED|COLOR_SEP|COLOR_FAINT|COLOR_RED|COLOR_YELLOW|COLOR_GREEN)
+          color_valid "$v" || { echo "$k: empty, a colour index 0-255, R;G;B (each 0-255), #rrggbb or dim, got: $v" >&2; exit 1; } ;;
+        *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, BG, COLOR_*)" >&2; exit 1 ;;
       esac
     done
     (( ds < de )) || { echo "DAY_START ($ds) must be before DAY_END ($de)" >&2; exit 1; }
     ensure_config
     for kv in "${sets[@]}"; do
       k=${kv%%=*} v=${kv#*=}
-      case $k in DAY_START|DAY_END) v=$((10#$v)) ;; esac
+      case $k in
+        DAY_START|DAY_END) v=$((10#$v)) ;;
+        BG|COLOR_*) v=$(color_hex "$v") ;;  # colours are saved as #rrggbb
+      esac
       set_config "$k" "$v"
     done
     echo "Saved to $UR_HOME/config: ${sets[*]}"
+    ;;
+
+  preview)
+    # Render with a throwaway copy of the config and state, so nothing is saved
+    # and no alert fires. The --set run validates the values.
+    tmp=$(mktemp -d) || exit 1
+    trap 'rm -rf "$tmp"' EXIT
+    [ -f "$UR_HOME/config" ] && cp "$UR_HOME/config" "$tmp/config"
+    if [ ${#sets[@]} -gt 0 ]; then
+      USAGE_RUNWAY_HOME="$tmp" bash "${BASH_SOURCE[0]}" --set "${sets[@]}" >/dev/null || exit 1
+    fi
+    printf 'NOTIFY=off\nBELL=off\n' >> "$tmp/config"
+    jq -n '(now | floor) as $t | {session_id: "preview", cost: {total_cost_usd: 1},
+        context_window: {used_percentage: 12.3},
+        rate_limits: {five_hour: {used_percentage: 20, resets_at: ($t + 7200)},
+                      seven_day: {used_percentage: 30, resets_at: ($t + 345600)}}}' \
+      | USAGE_RUNWAY_HOME="$tmp" CLAUDE_CONFIG_DIR="$tmp" bash "$UR_ROOT/scripts/statusline.sh" \
+      | sed $'s/\e\\[[0-9;]*m//g'
     ;;
 
   uninstall)

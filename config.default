@@ -59,17 +59,21 @@ SYM_WAIT="…"
 # only or SEP=" | ". When unset it is SYM_SEP with a space on each side.
 # SEP=" · "
 
-# Background of the status line: empty for none, a 256-colour index (e.g. 236),
-# R;G;B truecolor (e.g. 40;44;52) or #rrggbb. When set, each segment is shown
-# as a pill padded with a space on each side; separators keep the terminal
-# background.
+# Background of the status line: empty for none, or a colour as below (e.g.
+# #303030). When set, each segment is shown as a pill padded with a space on
+# each side; separators keep the terminal background.
 BG=""
 
-# Colours: a 256-colour index, R;G;B truecolor or #rrggbb, or empty for the
-# terminal's default text colour. Indexes 0-15 are the terminal's own palette
-# (1 red, 2 green, 3 yellow, 4 blue, 8 grey).
-COLOR_LABEL="4"    # segment names: 5h, 7d, Ctx, Ses, Cmd
-COLOR_MUTED="8"    # arrow, reset sign and separator
-COLOR_GREEN="2"    # on track
-COLOR_YELLOW="3"   # projected above WARN_PCT, Cmd at CMD_WARN
-COLOR_RED="1"      # runs out before reset, Cmd at CMD_CRIT
+# Colours, saved as #rrggbb. Also accepted: rrggbb, R;G;B, a 256-colour
+# index (setup saves 16-255 as hex; 0-15 stay numbers, they are the terminal's
+# own palette and follow its theme), dim (the terminal's faint text), or empty
+# for the terminal's default text colour. The background is BG above.
+COLOR_TEXT=""           # other text: Ctx %, Ses %, Cmd % below CMD_WARN
+COLOR_PREFIX=""         # SYM_PREFIX
+COLOR_LABEL="#5f87d7"   # segment names: 5h, 7d, Ctx, Ses, Cmd
+COLOR_MUTED="#808080"   # arrow and reset sign
+COLOR_SEP="#6c6c6c"     # separator between segments
+COLOR_FAINT="#8a8a8a"   # time until reset, usage before a forecast exists
+COLOR_GREEN="#5faf5f"   # on track
+COLOR_YELLOW="#d7af5f"  # projected above WARN_PCT, Cmd at CMD_WARN
+COLOR_RED="#d75f5f"     # runs out before reset, Cmd at CMD_CRIT

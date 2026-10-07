@@ -274,13 +274,13 @@ check_not "no BG: no background codes" "$raw" $'\e[48;'
 fresh
 conf 'BG="236" SYM_PREFIX="[w] "'
 raw=$(input A 1 20 7200 | bash "$SL")
-P=$'\e[48;5;236m' Z=$'\e[0m'
+P=$'\e[48;5;236m' Z=$'\e[0m' LB=$'\e[38;2;95;135;215m' SC=$'\e[38;2;108;108;108m'
 check "BG: prefix stays outside the pills" "$raw" "[w] $P "
-check "BG: first segment is a padded pill" "$raw" "$P "$'\e[34m5h'
-check "BG: separator has no background" "$raw" " $Z"$'\e[90m · '"$Z$P "
+check "BG: first segment is a padded pill" "$raw" "$P $LB"'5h'
+check "BG: separator has no background" "$raw" " $Z$SC · $Z$P "
 check "BG: line ends with a pad and a full reset" "${raw: -5}" " $Z"
 # Pills are joined by separators, which start with a plain reset.
-pills=$(( $(grep -oF "$Z"$'\e[90m' <<<"$raw" | wc -l) + 1 ))
+pills=$(( $(grep -oF "$Z$SC" <<<"$raw" | wc -l) + 1 ))
 check "BG: one pill per segment (5h, Ctx, Ses)" "$pills" '3'
 out=$(sed 's/\x1b\[[0-9;]*m//g' <<<"$raw")
 check "BG: pills padded on both sides" "$out" '[w]  5h 20.0%'
@@ -289,7 +289,7 @@ check "BG: padded Ctx pill" "$out" ' ·  Ctx 12.3%  · '
 fresh
 conf 'BG="40;44;52"'
 raw=$(input A 1 20 7200 | bash "$SL")
-check "BG truecolor" "$raw" $'\e[48;2;40;44;52m \e[34m5h'
+check "BG truecolor" "$raw" $'\e[48;2;40;44;52m \e[38;2;95;135;215m5h'
 
 fresh
 conf 'BG="999"'
@@ -299,18 +299,24 @@ check_not "invalid BG in config is ignored" "$raw" $'\e[48;'
 fresh
 conf 'BG="#282c34"'
 raw=$(input A 1 20 7200 | bash "$SL")
-check "BG #rrggbb" "$raw" $'\e[48;2;40;44;52m \e[34m5h'
+check "BG #rrggbb" "$raw" $'\e[48;2;40;44;52m \e[38;2;95;135;215m5h'
 
 fresh
 conf 'COLOR_GREEN="#b44141"'
 raw=$(input A 1 20 7200 | bash "$SL")
 check "COLOR_GREEN #rrggbb" "$raw" $'\e[38;2;180;65;65m20.0%'
+conf 'COLOR_GREEN="b44141"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "COLOR_GREEN hex without #" "$raw" $'\e[38;2;180;65;65m20.0%'
+conf 'COLOR_GREEN="dim"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "COLOR_GREEN dim" "$raw" $'\e[2m20.0%'
 conf 'COLOR_GREEN="120"'
 raw=$(input A 1 20 7200 | bash "$SL")
 check "COLOR_GREEN colour index" "$raw" $'\e[38;5;120m20.0%'
 conf 'COLOR_GREEN="red"'
 raw=$(input A 1 20 7200 | bash "$SL")
-check "invalid COLOR_GREEN keeps the default" "$raw" $'\e[32m20.0%'
+check "invalid COLOR_GREEN keeps the default" "$raw" $'\e[38;2;95;175;95m20.0%'
 conf 'COLOR_GREEN=""'
 raw=$(input A 1 20 7200 | bash "$SL")
 check "empty COLOR_GREEN: default text colour" "$raw" $'\e[0m 20.0%'
@@ -330,17 +336,35 @@ check_not "COLOR_RED replaces the default red" "$raw" $'\e[31m'
 fresh
 bash "$SETUP" --set 'COLOR_RED=#b44141' 'COLOR_YELLOW=214' 'COLOR_GREEN=40;160;80' >/dev/null; rc=$?
 check "setup --set saves colours" "$rc" '0'
+check "setup --set saves an index as hex" "$(cat "$USAGE_RUNWAY_HOME/config")" 'COLOR_GREEN="#28a050"'
 check "setup --set writes COLOR_RED" "$(cat "$USAGE_RUNWAY_HOME/config")" 'COLOR_RED="#b44141"'
-check "setup --status shows colours" "$(bash "$SETUP" --status)" 'COLOR_YELLOW="214" COLOR_RED="#b44141"'
-for bad in 'red' '#b4414' '#b44141ff' '256' '$(touch x)'; do
+check "setup --status shows colours" "$(bash "$SETUP" --status)" 'COLOR_YELLOW="#ffaf00" COLOR_RED="#b44141"'
+for bad in 'red' '#b4414' '#b44141ff' '256' '$(touch x)' 'b4414g'; do
   bash "$SETUP" --set "COLOR_RED=$bad" >/dev/null 2>&1; rc=$?
   check "setup --set rejects bad COLOR_RED ($bad)" "$rc" '1'
 done
+bash "$SETUP" --set 'COLOR_TEXT=d75f5f' 'COLOR_FAINT=dim' 'COLOR_SEP=240' 'COLOR_PREFIX=' >/dev/null; rc=$?
+check "setup --set saves the other colours" "$rc" '0'
+cfg=$(cat "$USAGE_RUNWAY_HOME/config")
+check "setup --set adds # to hex" "$cfg" 'COLOR_TEXT="#d75f5f"'
+check "setup --set keeps palette 0-15 as numbers" "$(bash "$SETUP" --set COLOR_LABEL=4 >/dev/null; cat "$USAGE_RUNWAY_HOME/config")" 'COLOR_LABEL="4"'
+check "setup --set saves 16-255 as hex" "$cfg" 'COLOR_SEP="#585858"'
+check "setup --set keeps dim" "$cfg" 'COLOR_FAINT="dim"'
+bash "$SETUP" --set 'BG=dim' >/dev/null 2>&1; rc=$?
+check "setup --set rejects BG=dim" "$rc" '1'
+
+fresh
+conf 'COLOR_TEXT="7" COLOR_SEP="#000080" COLOR_PREFIX="1" SYM_PREFIX="[w] " COLOR_FAINT="244"'
+raw=$(input A 1 20 7200 | bash "$SL")
+check "COLOR_PREFIX colours the prefix" "$raw" $'\e[31m[w] \e[0m'
+check "COLOR_SEP colours the separator" "$raw" $'\e[38;2;0;0;128m · '
+check "COLOR_TEXT colours plain text" "$raw" $'\e[0m\e[37m 12.3%'
+check "COLOR_FAINT colours the reset time" "$raw" $'\e[38;5;244m02:00'
 
 fresh
 bash "$SETUP" --set 'BG=40;44;52' >/dev/null; rc=$?
 check "setup --set saves BG" "$rc" '0'
-check "setup --set writes BG" "$(cat "$USAGE_RUNWAY_HOME/config")" 'BG="40;44;52"'
+check "setup --set writes BG as hex" "$(cat "$USAGE_RUNWAY_HOME/config")" 'BG="#282c34"'
 for bad in '256' '1;2' 'red' '1;2;300' '$(touch x)' '1;2;3;4'; do
   bash "$SETUP" --set "BG=$bad" >/dev/null 2>&1; rc=$?
   check "setup --set rejects bad BG ($bad)" "$rc" '1'

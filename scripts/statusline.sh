@@ -26,14 +26,17 @@ IFS=$'\t' read -r sid ctx cost h5u h5r d7u d7r < <(jq -r '[
 ] | @tsv' <<<"$in")
 
 # Colours from the config: empty means the terminal's default text colour, an
-# invalid value falls back to the built-in default.
-fg_color() {  # fg_color <value> <fallback escape>
-  if ! color_valid "$1"; then printf '%s' "$2"
-  elif [ -n "$1" ]; then color_code "$1" 38; fi
+# invalid value falls back to the default from config.default.
+fg_color() {  # fg_color <value> <default value>
+  local v=$1
+  color_valid "$v" || v=$2
+  [ -n "$v" ] && color_code "$v" 38
 }
-K=$(fg_color "$COLOR_MUTED" $'\e[90m'); B=$(fg_color "$COLOR_LABEL" $'\e[34m')
-R=$(fg_color "$COLOR_RED" $'\e[31m'); Y=$(fg_color "$COLOR_YELLOW" $'\e[33m'); G=$(fg_color "$COLOR_GREEN" $'\e[32m')
-D=$'\e[2m'; N=$'\e[0m'
+K=$(fg_color "$COLOR_MUTED" '#808080'); B=$(fg_color "$COLOR_LABEL" '#5f87d7')
+R=$(fg_color "$COLOR_RED" '#d75f5f'); Y=$(fg_color "$COLOR_YELLOW" '#d7af5f'); G=$(fg_color "$COLOR_GREEN" '#5faf5f')
+D=$(fg_color "$COLOR_FAINT" '#8a8a8a'); SC=$(fg_color "$COLOR_SEP" '#6c6c6c')
+T=$(fg_color "$COLOR_TEXT" ''); PC=$(fg_color "$COLOR_PREFIX" '')
+N=$'\e[0m'"$T"
 
 # Optional background: each segment becomes a padded pill, the separators
 # between them stay on the terminal background. Resets inside a segment
@@ -41,7 +44,7 @@ D=$'\e[2m'; N=$'\e[0m'
 BGS=""
 if color_valid "$BG" && [ -n "$BG" ]; then
   BGS=$(color_code "$BG" 48)
-  N=$'\e[0m'"$BGS"
+  N=$'\e[0m'"$BGS$T"
 fi
 
 # Rate limits arrive with each session's own API responses, so an idle session
@@ -283,7 +286,11 @@ fi
 
 out="" RST=$'\e[0m' sep=${SEP-" $SYM_SEP "}
 for s in ${SEGS[@]+"${SEGS[@]}"}; do
-  [ -n "$BGS" ] && s="${BGS} ${s} ${RST}"
-  out+="${out:+${K}${sep}${RST}}$s"
+  s="$T$s"
+  [ -n "$BGS" ] && s="${BGS}${T} ${s} ${RST}"
+  [ -n "$T" ] && [ -z "$BGS" ] && s+=$RST
+  out+="${out:+${SC}${sep}${RST}}$s"
 done
-printf '%s%s\n' "$SYM_PREFIX" "$out"
+pre=$SYM_PREFIX
+[ -n "$PC" ] && [ -n "$pre" ] && pre="$PC$pre$RST"
+printf '%s%s\n' "$pre" "$out"

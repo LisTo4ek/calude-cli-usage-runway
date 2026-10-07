@@ -18,7 +18,7 @@ Pick the mode from the user's request (default: install):
 | check status | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --status` |
 | disable / remove | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --uninstall` |
 | remove including settings and history | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --uninstall --purge` |
-| change working days / hours, symbols (arrow, separator, …), prefix, background or colours | the settings menu below |
+| change working days / hours, symbols (arrow, separator, …), prefix, background or colours (green, red, …) | the settings menu below |
 
 If `${CLAUDE_PLUGIN_ROOT}` is not expanded in the command, use
 `"$(cat ~/.claude/usage-runway/plugin-root)/scripts/setup.sh"` instead.
@@ -30,10 +30,11 @@ if they agree, re-run with `--force`.
 ## Settings menu
 
 Run this after a successful install, and when the user asks to change their
-working days, hours, signs (symbols), prefix or background. The main menu is
-one AskUserQuestion call with four single-select questions, followed by one
-call with the Background question. Only if the user picks "Pick each sign" do
-you ask the sign menus that follow it.
+working days, hours, signs (symbols), prefix, background or colours. The main
+menu is one AskUserQuestion call with four single-select questions, followed
+by one call with the Background and Colours questions. Only if the user picks
+"Pick each sign" do you ask the sign menus, and only if they pick "Pick each
+colour" do you ask the colour menus.
 
 If the user already said what they want (for example "arrow ->" or "Mon to
 Fri, 9 to 18"), skip the menu and save just that.
@@ -41,18 +42,54 @@ Fri, 9 to 18"), skip the menu and save just that.
 If the user names a setting without a value (for example "prefix" or
 "arrow"), skip the main menu and ask only that setting's question in one
 AskUserQuestion call. For work days, work hours and the prefix, use its
-question from the main menu; for the background, the Background question.
-For a sign, use its question from the sign menus.
+question from the main menu; for the background or the colours, the
+Background or Colours question. For a sign, use its question from the sign
+menus; for a single colour (for example "red"), its question from the colour
+menus.
 Mark the current value the same way as below.
 
 First run `setup.sh --status` and read the `schedule:`, `symbols:`,
-`separator:` and `background:` lines.
+`separator:`, `background:` and `colours:` lines.
 Add " (current)" to the option that matches each current value. If the
 current value matches no option, replace the third option with
 "Keep current: <value>".
 
-Do not give any option a `preview`. Previews hide the automatic "Other" text
-field, which is where the user types their own value.
+### Previews
+
+Give every option of every menu question a `preview`, so the user sees the
+result before choosing. Build the status line previews with the setup script,
+which prints a sample line in plain text with the current config plus the
+given settings. It saves nothing. Render all previews of one menu in a single
+Bash call, one `--preview` per option:
+
+```
+S="${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh"
+bash "$S" --preview "SYM_ARROW=->" "SYM_RESET=@"; bash "$S" --preview "SEP= | "
+```
+
+`--preview` with no settings shows the current line ("Keep current", "(current)"
+options). For "Pick each sign" and "Pick each colour", the preview is the
+current line followed by the list of signs or colours the menu asks about.
+
+- **Signs, separator, prefix, background:** the `--preview` line with that
+  option's settings. A background shows only as the padding around segments.
+  `SYM_WARN`, `SYM_FULL` and `SYM_WAIT` do not appear on the sample line; write
+  the `5h` segment in that state yourself, e.g. `5h 90.0% → 120.0% ⚠ 00:40 ↻
+  02:00 (16:42)`, `5h 100% ⛔ ↻ 02:00 (16:42)` or `5h 2.0% → … ↻ 04:50 (19:32)`.
+- **Colours:** previews are plain text and cannot show colour. Show the
+  current line, then one line per colour the option sets, naming the part it
+  colours and its hex value, e.g. `red   #d75f5f  runs out before reset, Cmd
+  at CMD_CRIT`. Indexes 0-15 depend on the terminal theme: write `terminal
+  red` and so on instead of a hex code.
+- **Work days and hours:** a week table with one row per day, marking the
+  working hours, e.g. `Mon  08-22 work, other hours count 0.1`, `Sat  off day,
+  counts 0.1`.
+
+With previews the menu shows options side by side and the "Other" field may
+not be visible. Keep the "Pick Other to type your own" hint in the questions.
+If the user picks Other without a value, or says they want their own value,
+ask for it in a plain chat message, then show its `--preview` line before
+saving.
 
 | Header | Question | Options |
 |---|---|---|
@@ -61,15 +98,37 @@ field, which is where the user types their own value.
 | Signs | "Which status line signs? Pick Other to set single signs, e.g. arrow -> reset @ sep \| (names: arrow, reset, sep, warn, full, wait)." | "Keep current (Recommended)", "Pick each sign", "Unicode defaults", "Plain ASCII" |
 | Prefix | "What text should come before the status line? Pick Other to type your own." | "None (Recommended)", "[work]", "[home]" |
 
-Right after the main menu, ask the Background question as its own
-AskUserQuestion call (single-select, no preview):
+Right after the main menu, ask the Background and Colours questions together
+in one AskUserQuestion call (both single-select, with previews):
 
 | Header | Question | Options |
 |---|---|---|
-| Background | "Which background for the status line segments? Each segment becomes a pill; separators keep the terminal background. Pick Other to type a 256-colour index 0-255 or R;G;B." | "None (Recommended)", "Dark grey (236)", "Slate (40;44;52)" |
+| Background | "Which background for the status line segments? Each segment becomes a pill; separators keep the terminal background. Pick Other to type a 256-colour index 0-255, R;G;B or #rrggbb." | "None (Recommended)", "Dark grey (236)", "Slate (40;44;52)" |
+| Colours | "Which colours? Pick Other to set single colours, e.g. red d75f5f green #5faf5f (names: text, prefix, labels, muted, separator, faint, green, yellow, red)." | "Keep current (Recommended)", "Interactive picker", "Pick each colour", "Defaults" |
 
 Give each option a short `description`. For "Keep current", list the current
-signs. For "Pick each sign", say it opens a menu with one question per sign.
+signs or colours. For "Pick each sign" and "Pick each colour", say it opens a
+menu with one question per sign or colour. For "Defaults", list the default
+hex colours. For
+"Interactive picker", say it opens in a terminal with arrow keys and a live
+preview in the real colours and background.
+
+### Interactive picker
+
+If the user picks "Interactive picker" or asks to choose colours
+interactively, do not run it yourself: it needs a terminal, and Bash commands
+here have none. Tell the user to run it in a terminal window (not with `!`):
+
+```
+bash "$(cat ~/.claude/usage-runway/plugin-root)/scripts/colors.sh"
+```
+
+It shows three sample lines (on track, warning, runs out) rendered by the
+status line with the real colours and background, the list of colour
+settings and the 256-colour palette. Keys: ↑/↓ choose a setting, ←/→ step
+through the 256 colours, `[` `]` jump a palette row, `{` `}` step by 6, `t`
+type a value, `e` terminal default, `d` dim, `u` undo, Enter saves, `q` quits
+without saving. Saved colours reach the status line on its next refresh.
 For the other sign sets and the prefixes, show an example line such as
 `5h 20.0% → 33.3% ↻ 02:00 (16:42) · 7d 30.0%`.
 
@@ -78,16 +137,15 @@ For the other sign sets and the prefixes, show an example line such as
 Ask these only if the user picked "Pick each sign". AskUserQuestion takes at
 most four questions per call, so ask menu A as one call with four questions,
 then menu B as one call with two. All are single-select, and like the main
-menu they have no previews. Mark the option that matches the current value
+menu each option has a preview. Mark the option that matches the current value
 with " (current)"; if the current value matches no option, replace the third
 option with "Keep current: <value>". Give each option a `description` with an
 example line using that sign, such as `5h 20.0% -> 33.3% ↻ 02:00 (16:42) · 7d
 30.0%`.
 
 Give each sign question exactly three options. AskUserQuestion adds "Other"
-as the fourth option, and it has a text field where the user types their own
-sign right in the menu. Do not add a "Type my own" option and do not ask for
-a custom sign in a later message. Use the typed text as the value.
+as the fourth option. Do not add a "Type my own" option. Use the typed text as
+the value; if Other comes without one, ask for it as described under Previews.
 
 | Menu | Header | Question | Options (setting value) |
 |---|---|---|---|
@@ -101,6 +159,32 @@ a custom sign in a later message. Use the typed text as the value.
 The option label is the setting value, so "->" in Arrow becomes
 `SYM_ARROW="->"`. Mark no option "(Recommended)"; label the default option
 "→ (default)" and so on, and drop " (default)" from the saved value.
+
+### Colour menus
+
+Ask these only if the user picked "Pick each colour": menu C as one call with
+four questions, then menu D as one call with four. They follow the rules of
+the sign menus: single-select, previews, exactly three options, " (current)"
+on the option that matches the current value, "Keep current: <value>" in place
+of the third option when none matches, and Other for a typed value. The
+option label is the hex value to save, e.g. "#d75f5f" becomes
+`COLOR_RED="#d75f5f"`. Describe each option by where the colour shows.
+
+| Menu | Header | Question | Options (setting value) |
+|---|---|---|---|
+| C | Green | "Which colour for a limit that is on track? Pick Other to type #rrggbb, rrggbb or a 256-colour index." | "#5faf5f (default)", "#87af87", "#00d75f" |
+| C | Yellow | "Which colour for a warning (projected above WARN_PCT, Cmd at CMD_WARN)? Pick Other to type your own." | "#d7af5f (default)", "#ffaf00", "#d7d75f" |
+| C | Red | "Which colour for a limit that runs out before reset, and Cmd at CMD_CRIT? Pick Other to type your own." | "#d75f5f (default)", "#af5f5f", "#ff5f5f" |
+| C | Muted | "Which colour for the arrow and reset sign? Pick Other to type your own." | "#808080 (default)", "#585858", "#a8a8a8" |
+| D | Labels | "Which colour for the segment names (5h, 7d, Ctx, Ses, Cmd)? Pick Other to type your own." | "#5f87d7 (default)", "#87afd7", "#5fafaf" |
+| D | Separator | "Which colour for the separator between segments? Pick Other to type your own." | "#6c6c6c (default)", "#444444", "#a8a8a8" |
+| D | Faint | "Which colour for the time until reset? Pick Other to type your own." | "#8a8a8a (default)", "#6c6c6c", "dim" |
+| D | Text | "Which colour for other text (Ctx %, Ses %, Cmd %)? Pick Other to type your own." | "Terminal default (default)", "#d0d0d0", "#ffffff" |
+
+The prefix colour (`COLOR_PREFIX`) has no menu question; set it from an Other
+answer or the interactive picker. "Terminal default" saves an empty value.
+`setup.sh --set` saves every colour as `#rrggbb`, except indexes 0-15 (the
+terminal's own palette, which follows its theme), `dim` and empty.
 
 ### Map the answers
 
@@ -123,6 +207,11 @@ Days are numbered 1 = Monday to 7 = Sunday. Hours are whole hours from 0 to
 | [work] / [home] | `SYM_PREFIX="[work] "` / `SYM_PREFIX="[home] "` |
 | None (background) | `BG=""` |
 | Dark grey (236) / Slate (40;44;52) | `BG="236"` / `BG="40;44;52"` |
+| Keep current (colours) | nothing |
+| Pick each colour | the answers from the colour menus |
+| Interactive picker | nothing; tell the user how to run it (see Interactive picker) |
+| Defaults | `COLOR_TEXT="" COLOR_PREFIX="" COLOR_LABEL="#5f87d7" COLOR_MUTED="#808080" COLOR_SEP="#6c6c6c" COLOR_FAINT="#8a8a8a" COLOR_GREEN="#5faf5f" COLOR_YELLOW="#d7af5f" COLOR_RED="#d75f5f"` |
+| Terminal palette (Other: "terminal colours") | `COLOR_LABEL="4" COLOR_MUTED="8" COLOR_SEP="8" COLOR_FAINT="dim" COLOR_GREEN="2" COLOR_YELLOW="3" COLOR_RED="1"` (follow the terminal theme) |
 
 | Sign name | Setting | Default | Shown |
 |---|---|---|---|
@@ -146,9 +235,11 @@ Convert "Other" answers the same way. "Mon, Wed, Fri" becomes
 "arrow >> sep /" becomes `SYM_ARROW=">>" SYM_SEP="/"`, "only spaces between
 the segments" becomes `SEP="   "`, and "bg 40,44,52" or
 "background 40 44 52" becomes `BG="40;44;52"`, and "red #b44141" becomes
-`COLOR_RED="#b44141"` (also `COLOR_YELLOW`, `COLOR_GREEN`, `COLOR_LABEL` for
-segment names and `COLOR_MUTED` for signs; defaults `1`, `3`, `2`, `4`, `8`;
-empty means the terminal's default text colour). Accept the setting
+`COLOR_RED="#b44141"` (the names text, prefix, labels, muted, separator,
+faint, green, yellow and red map to `COLOR_TEXT`, `COLOR_PREFIX`,
+`COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP`, `COLOR_FAINT`, `COLOR_GREEN`,
+`COLOR_YELLOW` and `COLOR_RED`; empty means the terminal's default text
+colour, and hex works with or without `#`). Accept the setting
 names and plain words too ("separator", "warning"). Notes added to an option
 that name a value count the same way. For a custom prefix, add a trailing
 space unless the user asked for none, so the prefix does not run into `5h`.
@@ -169,7 +260,7 @@ to 32 bytes, spaces included.
 `\`, `$`, backtick or control characters. If the call exits with code 1, show
 the user the error and ask about that setting again. `BG` and the `COLOR_*`
 settings are empty, a colour index 0-255, `R;G;B` with each part 0-255, or
-`#rrggbb`. Afterwards, tell the
+`#rrggbb` (the `#` is optional); `COLOR_*` may also be `dim`. Afterwards, tell the
 user the status line picks up the change on its next refresh (about 10
 seconds).
 
@@ -187,6 +278,6 @@ After a successful install and the settings menu, tell the user:
   `Usage runway: starting...`. API-key accounts always see that and context usage.
 - Settings such as the auto-stop guard (`GUARD=on`) are in
   `~/.claude/usage-runway/config`.
-- To change the working days and hours, or the signs, prefix and background, later, run
+- To change the working days and hours, or the signs, prefix, background and colours, later, run
   `/usage-runway:setup` again, or name the change directly, e.g.
   `/usage-runway:setup arrow ->`.
