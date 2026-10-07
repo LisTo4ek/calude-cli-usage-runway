@@ -57,6 +57,25 @@ color_hex() {
   esac
 }
 
+# plugin_version <root>: the version in a plugin root's plugin.json (empty if none).
+plugin_version() {
+  jq -r '.version // ""' "$1/.claude-plugin/plugin.json" 2>/dev/null
+}
+
+# version_ge <a> <b>: true when version a is at least b (dotted numbers; an
+# empty version counts as unknown, so the answer is true).
+version_ge() {
+  local IFS=. i x y a b
+  { [ -z "$1" ] || [ -z "$2" ]; } && return 0
+  read -r -a a <<<"$1"; read -r -a b <<<"$2"
+  for i in 0 1 2; do
+    x=${a[i]:-0} y=${b[i]:-0}; x=${x%%[!0-9]*} y=${y%%[!0-9]*}
+    (( 10#${x:-0} > 10#${y:-0} )) && return 0
+    (( 10#${x:-0} < 10#${y:-0} )) && return 1
+  done
+  return 0
+}
+
 # fmt_date <epoch> <+format>: GNU date, falling back to BSD date.
 fmt_date() {
   date -d "@$1" "$2" 2>/dev/null || date -r "$1" "$2"

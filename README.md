@@ -48,6 +48,7 @@ Name the change after `/usage-runway:setup` to skip the menu:
 | `/usage-runway:setup warn !` | Runs out before reset: `⚠` (default), `!`, `‼` or your own. |
 | `/usage-runway:setup full FULL` | Limit reached: `⛔` (default), `✖`, `FULL` or your own. |
 | `/usage-runway:setup wait ...` | No forecast yet: `…` (default), `...`, `?` or your own. |
+| `/usage-runway:setup ses sep /` | Between the 5-hour windows in `Ses`: `" \| "` (default), `" / "`, `" · "` or your own, spaces included. |
 | `/usage-runway:setup plain ASCII` | All six signs at once: `Unicode defaults` or `plain ASCII`. |
 | `/usage-runway:setup prefix [home]` | Text before the status line: none, `[work]`, `[home]` or your own. |
 | `/usage-runway:setup bg #303030` | Segment background, each segment as a pill: none or a color. |

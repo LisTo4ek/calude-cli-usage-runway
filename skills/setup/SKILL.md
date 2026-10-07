@@ -95,7 +95,7 @@ saving.
 |---|---|---|
 | Work days | "Which days do you usually work? Pick Other to type your own, e.g. Mon, Wed, Fri." | "Every day (Recommended)", "Monday to Friday", "Monday to Saturday" |
 | Work hours | "Which hours do you usually work? Pick Other to type your own, e.g. 7-15." | "All day (Recommended)", "08:00 to 22:00", "09:00 to 18:00" |
-| Signs | "Which status line signs? Pick Other to set single signs, e.g. arrow -> reset @ sep \| (names: arrow, reset, sep, warn, full, wait)." | "Keep current (Recommended)", "Pick each sign", "Unicode defaults", "Plain ASCII" |
+| Signs | "Which status line signs? Pick Other to set single signs, e.g. arrow -> reset @ sep \| (names: arrow, reset, sep, warn, full, wait, ses sep)." | "Keep current (Recommended)", "Pick each sign", "Unicode defaults", "Plain ASCII" |
 | Prefix | "What text should come before the status line? Pick Other to type your own." | "None (Recommended)", "[work]", "[home]" |
 
 Right after the main menu, ask the Background and Colors questions together
@@ -136,7 +136,7 @@ For the other sign sets and the prefixes, show an example line such as
 
 Ask these only if the user picked "Pick each sign". AskUserQuestion takes at
 most four questions per call, so ask menu A as one call with four questions,
-then menu B as one call with two. All are single-select, and like the main
+then menu B as one call with three. All are single-select, and like the main
 menu each option has a preview. Mark the option that matches the current value
 with " (current)"; if the current value matches no option, replace the third
 option with "Keep current: <value>". Give each option a `description` with an
@@ -155,9 +155,13 @@ the value; if Other comes without one, ask for it as described under Previews.
 | A | Warning | "Which sign should warn that a limit runs out before reset? Pick Other to type your own." | "⚠" (default), "!", "‼" |
 | B | Limit hit | "Which sign should show a limit is reached? Pick Other to type your own." | "⛔" (default), "✖", "FULL" |
 | B | Waiting | "Which sign should show there is no forecast yet? Pick Other to type your own." | "…" (default), "...", "?" |
+| B | Ses sep | "What should separate the 5-hour windows in Ses? It is shown in COLOR_MUTED. Pick Other to type your own, spaces included." | "\" \| \"" (default), "\" / \"", "\" · \"" |
 
 The option label is the setting value, so "->" in Arrow becomes
-`SYM_ARROW="->"`. Mark no option "(Recommended)"; label the default option
+`SYM_ARROW="->"`, and "\" / \"" in Ses sep becomes `SES_SEP=" / "` (the quotes
+show the spaces; save the text between them). Preview the Ses sep options
+with a sample such as `Ses 38.0% / 60.0% / 4.0%`; `--preview` shows only one
+window. Mark no option "(Recommended)"; label the default option
 "→ (default)" and so on, and drop " (default)" from the saved value.
 
 ### Color menus

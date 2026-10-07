@@ -19,7 +19,14 @@ seen="$UR_STATE/seen-$sid"
 msgs=""
 
 if [ "$event" = SessionStart ]; then
-  echo "$UR_ROOT" > "$UR_HOME/plugin-root"
+  # A session started before an update still runs the older plugin; it must not
+  # point the launcher back at that version, so only an equal or newer one (or
+  # a recorded path that is gone) is replaced.
+  rec=$(cat "$UR_HOME/plugin-root" 2>/dev/null)
+  if [ -z "$rec" ] || [ ! -f "$rec/scripts/statusline.sh" ] \
+     || version_ge "$(plugin_version "$UR_ROOT")" "$(plugin_version "$rec")"; then
+    echo "$UR_ROOT" > "$UR_HOME/plugin-root"
+  fi
   if ! jq -e --arg l "$UR_HOME/statusline.sh" \
        '.statusLine.command // "" | (. == $l or test("usage-runway"))' "$UR_SETTINGS" >/dev/null 2>&1 \
      && [ ! -f "$UR_HOME/setup-hint-shown" ]; then

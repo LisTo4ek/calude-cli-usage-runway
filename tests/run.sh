@@ -182,6 +182,20 @@ fresh
 msg=$(hook A SessionStart)
 check "session start suggests setup" "$msg" '/usage-runway:setup'
 check "session start records plugin path" "$(cat "$USAGE_RUNWAY_HOME/plugin-root")" "$ROOT"
+fake() {  # fake <dir> <version>: a plugin root with a status line script
+  mkdir -p "$1/.claude-plugin" "$1/scripts" && touch "$1/scripts/statusline.sh"
+  echo "{\"version\": \"$2\"}" > "$1/.claude-plugin/plugin.json"
+}
+fake "$T/newer" 99.0.0; echo "$T/newer" > "$USAGE_RUNWAY_HOME/plugin-root"
+hook A SessionStart >/dev/null
+check "older session keeps a newer plugin path" "$(cat "$USAGE_RUNWAY_HOME/plugin-root")" "$T/newer"
+fake "$T/older" 0.0.9; echo "$T/older" > "$USAGE_RUNWAY_HOME/plugin-root"
+hook A SessionStart >/dev/null
+check "session start replaces an older plugin path" "$(cat "$USAGE_RUNWAY_HOME/plugin-root")" "$ROOT"
+echo "$T/gone" > "$USAGE_RUNWAY_HOME/plugin-root"
+hook A SessionStart >/dev/null
+check "session start replaces a missing plugin path" "$(cat "$USAGE_RUNWAY_HOME/plugin-root")" "$ROOT"
+check "version_ge compares numbers" "$(bash -c ". '$ROOT/scripts/common.sh'; version_ge 0.1.10 0.1.9 && echo y; version_ge 0.1.9 0.1.10 || echo n; version_ge 1.0 1.0.0 && echo e")" $'y\nn\ne'
 msg=$(hook B SessionStart)
 check_not "setup hint only once" "$msg" 'setup'
 
