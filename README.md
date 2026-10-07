@@ -25,8 +25,8 @@ to `~/.claude/settings.json`. It keeps a backup at
 without asking. The status line appears within about 10 seconds. Setup
 then shows one menu with your working days and hours (default: every day, all
 day), the symbols (for example plain ASCII if your font lacks them), the
-prefix, the segment background and the colours. Choose "Pick each sign" or
-"Pick each colour" to set each one on its own, or pick Other in any question
+prefix, the segment background and the colors. Choose "Pick each sign" or
+"Pick each color" to set each one on its own, or pick Other in any question
 to type your own value. Run
 `/usage-runway:setup` again at any time to change them.
 
@@ -50,12 +50,12 @@ Name the change after `/usage-runway:setup` to skip the menu:
 | `/usage-runway:setup wait ...` | No forecast yet: `…` (default), `...`, `?` or your own. |
 | `/usage-runway:setup plain ASCII` | All six signs at once: `Unicode defaults` or `plain ASCII`. |
 | `/usage-runway:setup prefix [home]` | Text before the status line: none, `[work]`, `[home]` or your own. |
-| `/usage-runway:setup bg #303030` | Segment background, each segment as a pill: none or a colour. |
-| `/usage-runway:setup red d75f5f` | One colour: `text`, `prefix`, `labels`, `muted`, `separator`, `faint`, `green`, `yellow` or `red`. |
-| `/usage-runway:setup colours defaults` | All colours at once: `defaults` or `terminal colours` (follow the terminal theme). |
-| `/usage-runway:setup colours` | Choose colours from the menu, or get the command for the interactive colour picker. |
+| `/usage-runway:setup bg #303030` | Segment background, each segment as a pill: none or a color. |
+| `/usage-runway:setup red d75f5f` | One color: `text`, `prefix`, `labels`, `muted`, `separator`, `faint`, `green`, `yellow` or `red`. |
+| `/usage-runway:setup colors defaults` | All colors at once: `defaults` or `terminal colors` (follow the terminal theme). |
+| `/usage-runway:setup colors` | Choose colors from the menu, or get the command for the interactive color picker. |
 
-A colour is `#rrggbb`, `rrggbb`, `R;G;B` or a 256-colour index; setup saves it
+A color is `#rrggbb`, `rrggbb`, `R;G;B` or a 256-color index; setup saves it
 as `#rrggbb`. Indexes 0–15 stay numbers: they are the terminal's own palette
 and follow its theme.
 
@@ -93,7 +93,7 @@ the other settings below are changed in the config file.
 | `Cmd 1.0%` | 5-hour-limit usage by your last message, including all tools, skills and subagents it ran. |
 | `Usage runway: starting...` | No limit data yet: shown until the first response. |
 
-Colours: green is on track, yellow means the limit is projected above
+Colors: green is on track, yellow means the limit is projected above
 `WARN_PCT` at reset, red means it is projected to run out before reset. `Cmd`
 turns yellow at `CMD_WARN` and red at `CMD_CRIT`.
 
@@ -159,16 +159,16 @@ there, commented out). Changes apply on the next refresh.
 | `SYM_ARROW`, `SYM_RESET`, `SYM_SEP` | `→`, `↻`, `·` | Projection arrow, reset marker and segment separator. |
 | `SEP` | unset | The whole text between segments, spaces included, e.g. `"   "` for spaces only or `" \| "`. Unset means `SYM_SEP` with a space on each side. |
 | `SYM_WARN`, `SYM_FULL`, `SYM_WAIT` | `⚠`, `⛔`, `…` | Hits 100% before reset (also on alerts), limit reached, no forecast yet. |
-| `BG` | empty | Background of each segment, shown as separate pills: a 256-colour index (`236`), `R;G;B` (`40;44;52`) or `#rrggbb`. |
+| `BG` | empty | Background of each segment, shown as separate pills: a 256-color index (`236`), `R;G;B` (`40;44;52`) or `#rrggbb`. |
 | `COLOR_TEXT`, `COLOR_PREFIX` | empty, empty | Other text (`Ctx`, `Ses`, `Cmd` values) and the prefix. |
 | `COLOR_LABEL`, `COLOR_MUTED`, `COLOR_SEP` | `4`, `8`, `8` | Segment names (`5h`, `Ctx`, …), the arrow and reset sign, and the separator. |
 | `COLOR_FAINT` | `dim` | Time until reset, and usage before a forecast exists. |
 | `COLOR_GREEN`, `COLOR_YELLOW`, `COLOR_RED` | `2`, `3`, `1` | On track, warning, runs out. |
 
-Each colour is a 256-colour index (0-15 are the terminal's own palette, so
+Each color is a 256-color index (0-15 are the terminal's own palette, so
 they follow its theme), `R;G;B`, `#rrggbb` or `rrggbb` (e.g.
-`COLOR_RED="d75f5f"`), `dim`, or empty for the terminal's default text colour.
-To choose them with the arrow keys on a live preview, run the colour picker
+`COLOR_RED="d75f5f"`), `dim`, or empty for the terminal's default text color.
+To choose them with the arrow keys on a live preview, run the color picker
 in a terminal:
 
 ```

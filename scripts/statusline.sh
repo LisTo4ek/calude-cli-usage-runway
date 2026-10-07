@@ -25,7 +25,7 @@ IFS=$'\t' read -r sid ctx cost h5u h5r d7u d7r < <(jq -r '[
   (.rate_limits.seven_day.resets_at // "-")
 ] | @tsv' <<<"$in")
 
-# Colours from the config: empty means the terminal's default text colour, an
+# Colors from the config: empty means the terminal's default text color, an
 # invalid value falls back to the default from config.default.
 fg_color() {  # fg_color <value> <default value>
   local v=$1
@@ -40,7 +40,7 @@ N=$'\e[0m'"$T"
 
 # Optional background: each segment becomes a padded pill, the separators
 # between them stay on the terminal background. Resets inside a segment
-# re-apply it so the colour holds across the segment.
+# re-apply it so the color holds across the segment.
 BGS=""
 if color_valid "$BG" && [ -n "$BG" ]; then
   BGS=$(color_code "$BG" 48)

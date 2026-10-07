@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# usage-runway colour picker: choose the background and every colour of the
+# usage-runway color picker: choose the background and every color of the
 # status line with the arrow keys, on a live preview rendered by statusline.sh.
 # Needs a terminal; run it directly, not through Claude:
 #
@@ -10,7 +10,7 @@ set -u
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 if [ ! -t 0 ] || [ ! -t 1 ]; then
-  echo "The colour picker needs a terminal. Run it in a terminal window:" >&2
+  echo "The color picker needs a terminal. Run it in a terminal window:" >&2
   echo "  bash \"$UR_ROOT/scripts/colors.sh\"" >&2
   exit 1
 fi
@@ -32,7 +32,7 @@ trap 'exit 130' INT TERM
 printf '\e[?1049h\e[?25l'
 
 # Three sample lines (on track, warning, runs out) with a Cmd value in each
-# colour. Each line renders in its own throwaway home.
+# color. Each line renders in its own throwaway home.
 now=$(date +%s) r5=$(( $(date +%s) + 7200 ))
 SAMPLE_U=(20 55 70) SAMPLE_ACC=("18 0.5 4.0 4.0 -" "54 0.5 2.0 2.0 -" "64 0.5 10.0 10.0 -") SAMPLE_TURN=(3.0 2.0 6.0)
 for i in 0 1 2; do mkdir -p "$tmp/h$i/state"; done
@@ -63,7 +63,7 @@ hex_of() {  # hex_of <value>: the hex code shown next to a value
   esac
 }
 
-index_of() {  # index_of <value>: the 256-colour index nearest to a value
+index_of() {  # index_of <value>: the 256-color index nearest to a value
   local v=$1 r g b
   [ ${#v} = 6 ] && v="#$v"
   case $v in
@@ -82,7 +82,7 @@ index_of() {  # index_of <value>: the 256-colour index nearest to a value
     print idx }'
 }
 
-step() {  # step <delta>: move the selected value through the 256 colours
+step() {  # step <delta>: move the selected value through the 256 colors
   local n
   n=$(index_of "${VALS[$sel]}")
   if (( n < 0 )); then n=0; (( $1 < 0 )) && n=255
@@ -90,7 +90,7 @@ step() {  # step <delta>: move the selected value through the 256 colours
   VALS[$sel]=$n
 }
 
-palette() {  # palette: the 256 colours, the selected value marked
+palette() {  # palette: the 256 colors, the selected value marked
   local cur n row c mark
   cur=$(index_of "${VALS[$sel]}")
   for n in $(seq 0 15); do
@@ -115,7 +115,7 @@ palette() {  # palette: the 256 colours, the selected value marked
 draw() {
   local i v h
   printf '\e[H\e[2J'
-  printf 'usage-runway colours   ↑/↓ setting  ←/→ colour  [ ] row  { } block\n'
+  printf 'usage-runway colors   ↑/↓ setting  ←/→ color  [ ] row  { } block\n'
   printf '                       t type a value  e terminal default  d dim  u undo  Enter save  q quit\n\n'
   render
   printf '\n'
@@ -166,15 +166,15 @@ while :; do
       IFS= read -r v
       printf '\e[?25l'
       if color_valid "$v" && { [ "$v" != dim ] || [ "${KEYS[$sel]}" != BG ]; }; then VALS[$sel]=$v
-      else msg="Not a colour: $v"; fi ;;
+      else msg="Not a color: $v"; fi ;;
     enter)
       sets=()
       for i in "${!KEYS[@]}"; do
         [ "${VALS[$i]}" != "${ORIG[$i]}" ] && sets+=("${KEYS[$i]}=${VALS[$i]}")
       done
       cleanup; trap - EXIT
-      if [ ${#sets[@]} -eq 0 ]; then echo "No colour changed."; exit 0; fi
+      if [ ${#sets[@]} -eq 0 ]; then echo "No color changed."; exit 0; fi
       exec bash "$UR_ROOT/scripts/setup.sh" --set "${sets[@]}" ;;
-    q|esc) cleanup; trap - EXIT; echo "Colours not changed."; exit 0 ;;
+    q|esc) cleanup; trap - EXIT; echo "Colors not changed."; exit 0 ;;
   esac
 done

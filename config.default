@@ -59,15 +59,15 @@ SYM_WAIT="…"
 # only or SEP=" | ". When unset it is SYM_SEP with a space on each side.
 # SEP=" · "
 
-# Background of the status line: empty for none, or a colour as below (e.g.
+# Background of the status line: empty for none, or a color as below (e.g.
 # #303030). When set, each segment is shown as a pill padded with a space on
 # each side; separators keep the terminal background.
 BG=""
 
-# Colours, saved as #rrggbb. Also accepted: rrggbb, R;G;B, a 256-colour
+# Colors, saved as #rrggbb. Also accepted: rrggbb, R;G;B, a 256-color
 # index (setup saves 16-255 as hex; 0-15 stay numbers, they are the terminal's
 # own palette and follow its theme), dim (the terminal's faint text), or empty
-# for the terminal's default text colour. The background is BG above.
+# for the terminal's default text color. The background is BG above.
 COLOR_TEXT=""           # other text: Ctx %, Ses %, Cmd % below CMD_WARN
 COLOR_PREFIX=""         # SYM_PREFIX
 COLOR_LABEL="#5f87d7"   # segment names: 5h, 7d, Ctx, Ses, Cmd

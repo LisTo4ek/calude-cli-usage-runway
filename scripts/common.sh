@@ -13,7 +13,7 @@ UR_SETTINGS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json"
 # PREFIX was renamed to SYM_PREFIX in 0.1.2; keep reading configs that set it.
 [ -z "$SYM_PREFIX" ] && [ -n "${PREFIX:-}" ] && SYM_PREFIX=$PREFIX
 
-# color_valid <value>: empty, a 256-colour index 0-255, R;G;B with each 0-255,
+# color_valid <value>: empty, a 256-color index 0-255, R;G;B with each 0-255,
 # #rrggbb or rrggbb, or dim (the terminal's faint text style).
 color_valid() {
   local c
@@ -25,7 +25,7 @@ color_valid() {
 }
 
 # color_code <value> <38|48>: the foreground (38) or background (48) escape
-# for a valid non-empty colour value ("dim" is the faint style either way). Indexes 0-15 use the basic ANSI codes
+# for a valid non-empty color value ("dim" is the faint style either way). Indexes 0-15 use the basic ANSI codes
 # (e.g. 1 is \e[31m), so they follow the terminal's own palette.
 color_code() {
   local v=$1 n
@@ -39,7 +39,7 @@ color_code() {
   else printf '\e[%s;5;%sm' "$2" "$n"; fi
 }
 
-# color_hex <value>: a valid colour as it is saved in the config: #rrggbb
+# color_hex <value>: a valid color as it is saved in the config: #rrggbb
 # (lower case) for an index 16-255, R;G;B or hex. Indexes 0-15 (the terminal's
 # own palette, no fixed hex), dim and empty stay as they are.
 color_hex() {

@@ -86,7 +86,7 @@ case $mode in
     if [ -n "${SEP+x}" ]; then echo "separator:   SEP=\"$SEP\""
     else echo "separator:   SEP unset (\" $SYM_SEP \")"; fi
     echo "background:  BG=\"$BG\""
-    echo "colours:     COLOR_TEXT=\"$COLOR_TEXT\" COLOR_PREFIX=\"$COLOR_PREFIX\" COLOR_LABEL=\"$COLOR_LABEL\""
+    echo "colors:     COLOR_TEXT=\"$COLOR_TEXT\" COLOR_PREFIX=\"$COLOR_PREFIX\" COLOR_LABEL=\"$COLOR_LABEL\""
     echo "             COLOR_MUTED=\"$COLOR_MUTED\" COLOR_SEP=\"$COLOR_SEP\" COLOR_FAINT=\"$COLOR_FAINT\""
     echo "             COLOR_GREEN=\"$COLOR_GREEN\" COLOR_YELLOW=\"$COLOR_YELLOW\" COLOR_RED=\"$COLOR_RED\""
     awk_name=$(time_awk)
@@ -128,9 +128,9 @@ case $mode in
         SEP)
           [[ $v =~ $sep_re ]] || { echo "SEP: 0-32 bytes, spaces included, without \", \\, \$, \` or control characters, got: $v" >&2; exit 1; } ;;
         BG)
-          [ "$v" != dim ] && color_valid "$v" || { echo "BG: empty, a colour index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
+          [ "$v" != dim ] && color_valid "$v" || { echo "BG: empty, a color index 0-255, R;G;B (each 0-255) or #rrggbb, got: $v" >&2; exit 1; } ;;
         COLOR_TEXT|COLOR_PREFIX|COLOR_LABEL|COLOR_MUTED|COLOR_SEP|COLOR_FAINT|COLOR_RED|COLOR_YELLOW|COLOR_GREEN)
-          color_valid "$v" || { echo "$k: empty, a colour index 0-255, R;G;B (each 0-255), #rrggbb or dim, got: $v" >&2; exit 1; } ;;
+          color_valid "$v" || { echo "$k: empty, a color index 0-255, R;G;B (each 0-255), #rrggbb or dim, got: $v" >&2; exit 1; } ;;
         *) echo "unsupported setting: $k (supported: WORK_DAYS, DAY_START, DAY_END, SYM_PREFIX, SYM_ARROW, SYM_RESET, SYM_SEP, SYM_WARN, SYM_FULL, SYM_WAIT, SEP, BG, COLOR_*)" >&2; exit 1 ;;
       esac
     done
@@ -140,7 +140,7 @@ case $mode in
       k=${kv%%=*} v=${kv#*=}
       case $k in
         DAY_START|DAY_END) v=$((10#$v)) ;;
-        BG|COLOR_*) v=$(color_hex "$v") ;;  # colours are saved as #rrggbb
+        BG|COLOR_*) v=$(color_hex "$v") ;;  # colors are saved as #rrggbb
       esac
       set_config "$k" "$v"
     done

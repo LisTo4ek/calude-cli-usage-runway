@@ -313,16 +313,16 @@ raw=$(input A 1 20 7200 | bash "$SL")
 check "COLOR_GREEN dim" "$raw" $'\e[2m20.0%'
 conf 'COLOR_GREEN="120"'
 raw=$(input A 1 20 7200 | bash "$SL")
-check "COLOR_GREEN colour index" "$raw" $'\e[38;5;120m20.0%'
+check "COLOR_GREEN color index" "$raw" $'\e[38;5;120m20.0%'
 conf 'COLOR_GREEN="red"'
 raw=$(input A 1 20 7200 | bash "$SL")
 check "invalid COLOR_GREEN keeps the default" "$raw" $'\e[38;2;95;175;95m20.0%'
 conf 'COLOR_GREEN=""'
 raw=$(input A 1 20 7200 | bash "$SL")
-check "empty COLOR_GREEN: default text colour" "$raw" $'\e[0m 20.0%'
+check "empty COLOR_GREEN: default text color" "$raw" $'\e[0m 20.0%'
 conf 'COLOR_LABEL="#000080" COLOR_MUTED="12"'
 raw=$(input A 1 20 7200 | bash "$SL")
-check "COLOR_LABEL colours segment names" "$raw" $'\e[38;2;0;0;128m5h'
+check "COLOR_LABEL colors segment names" "$raw" $'\e[38;2;0;0;128m5h'
 check "COLOR_MUTED 8-15 uses bright ANSI" "$raw" $'\e[94m→'
 
 fresh
@@ -330,21 +330,21 @@ conf 'COLOR_RED="#b44141"'
 input A 1 20 7200 | bash "$SL" >/dev/null
 hook A UserPromptSubmit >/dev/null
 raw=$(input A 2 30 7200 | bash "$SL")
-check "COLOR_RED colours a critical Cmd" "$raw" $'\e[38;2;180;65;65m10.0%'
+check "COLOR_RED colors a critical Cmd" "$raw" $'\e[38;2;180;65;65m10.0%'
 check_not "COLOR_RED replaces the default red" "$raw" $'\e[31m'
 
 fresh
 bash "$SETUP" --set 'COLOR_RED=#b44141' 'COLOR_YELLOW=214' 'COLOR_GREEN=40;160;80' >/dev/null; rc=$?
-check "setup --set saves colours" "$rc" '0'
+check "setup --set saves colors" "$rc" '0'
 check "setup --set saves an index as hex" "$(cat "$USAGE_RUNWAY_HOME/config")" 'COLOR_GREEN="#28a050"'
 check "setup --set writes COLOR_RED" "$(cat "$USAGE_RUNWAY_HOME/config")" 'COLOR_RED="#b44141"'
-check "setup --status shows colours" "$(bash "$SETUP" --status)" 'COLOR_YELLOW="#ffaf00" COLOR_RED="#b44141"'
+check "setup --status shows colors" "$(bash "$SETUP" --status)" 'COLOR_YELLOW="#ffaf00" COLOR_RED="#b44141"'
 for bad in 'red' '#b4414' '#b44141ff' '256' '$(touch x)' 'b4414g'; do
   bash "$SETUP" --set "COLOR_RED=$bad" >/dev/null 2>&1; rc=$?
   check "setup --set rejects bad COLOR_RED ($bad)" "$rc" '1'
 done
 bash "$SETUP" --set 'COLOR_TEXT=d75f5f' 'COLOR_FAINT=dim' 'COLOR_SEP=240' 'COLOR_PREFIX=' >/dev/null; rc=$?
-check "setup --set saves the other colours" "$rc" '0'
+check "setup --set saves the other colors" "$rc" '0'
 cfg=$(cat "$USAGE_RUNWAY_HOME/config")
 check "setup --set adds # to hex" "$cfg" 'COLOR_TEXT="#d75f5f"'
 check "setup --set keeps palette 0-15 as numbers" "$(bash "$SETUP" --set COLOR_LABEL=4 >/dev/null; cat "$USAGE_RUNWAY_HOME/config")" 'COLOR_LABEL="4"'
@@ -356,10 +356,10 @@ check "setup --set rejects BG=dim" "$rc" '1'
 fresh
 conf 'COLOR_TEXT="7" COLOR_SEP="#000080" COLOR_PREFIX="1" SYM_PREFIX="[w] " COLOR_FAINT="244"'
 raw=$(input A 1 20 7200 | bash "$SL")
-check "COLOR_PREFIX colours the prefix" "$raw" $'\e[31m[w] \e[0m'
-check "COLOR_SEP colours the separator" "$raw" $'\e[38;2;0;0;128m · '
-check "COLOR_TEXT colours plain text" "$raw" $'\e[0m\e[37m 12.3%'
-check "COLOR_FAINT colours the reset time" "$raw" $'\e[38;5;244m02:00'
+check "COLOR_PREFIX colors the prefix" "$raw" $'\e[31m[w] \e[0m'
+check "COLOR_SEP colors the separator" "$raw" $'\e[38;2;0;0;128m · '
+check "COLOR_TEXT colors plain text" "$raw" $'\e[0m\e[37m 12.3%'
+check "COLOR_FAINT colors the reset time" "$raw" $'\e[38;5;244m02:00'
 
 fresh
 bash "$SETUP" --set 'BG=40;44;52' >/dev/null; rc=$?
